@@ -1,0 +1,94 @@
+root 계정 패스워드 바꾸기 
+우분트에서는 sudo : 관리자의 권한으로 
+#관리자 패스워드 바꾸기 (1234)
+sudo passwd root 
+1234  (화면에 안보임)
+1234
+#계정변경 
+su
+1234
+
+cd /home
+ls -l    : 디렉토리내의 파일 목록보기 , -l 자세히 보기
+drwxr-xr-x   소유자 
+d - 디렉토리  rwx (소유권자권한)  r-x(그룹권한) r-x(그룹외사람들)
+
+리눅스는 파일이나 디렉토리 가 . (도트)로 시작하면 숨김폴더나 파일 
+ls -al  : a -- all   l-
+
+cd .. 자기 보다 하나 위로 
+cd ~ 언제나 내 홈으로   root 빼고는 대부분의 계정은 
+     /home/user01 
+     /home/user02 ...........
+
+cd /  언제나 root(/) 위치로 이동 
+
+디렉토리 만들기 
+mkdir 디렉토리명 
+su user01  : user01계정으로 이동 
+cd ~ 
+
+mkdir test
+cd test 
+ls -al 
+
+#한번에 여러개의 폴더만들기
+cd ..
+mkdir programming/python/source : error 남 
+
+원래는 이렇게 해야함 옵션을 써서 한번에 가능하다
+mkdir programming
+cd programming 
+mkdir python 
+cd python 
+mkdir source 
+
+mkdir -p programming/python/source
+cd ~
+ls -al 
+cat .bashrc   #사용자 환경변수 설정하는 파일 
+
+rmdir 디렉토리명 - 디렉토리안에 아무것도 없어야 삭제가 된다 .
+rmdir test 
+rmdir programming  - 비어있는 디렉토리가 아니라서 삭제 불가 
+
+rm -rf programming  - 파일및 폴더 삭제 
+                    - r : recursive 전체 경로를 뒤지면서 삭제한다 
+                    - f : 강제로 
+
+/bin/sh  : born 쉘 실행  경로안나오고, 히스토리도 안되고 
+whoami
+
+sudo useradd -m user02  : 계정생성은 관리자만 
+                          -m : /home/user02 폴더를 만들어라 
+
+cd /home    
+ls -al 
+su user02  (1234)
+passwd   qwer1234 
+
+su user01 
+cd ~ 
+mkdir test 
+cd test
+touch linux.txt 
+ls 
+cat  linux.txt  내용없음 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
