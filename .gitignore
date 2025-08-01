@@ -173,4 +173,6 @@ secrets.json
 
 # Large Dataset
 aclImdb/
-
+*.jpg
+*.png
+*.txt
