@@ -176,3 +176,7 @@ aclImdb/
 *.jpg
 *.png
 *.txt
+*.mp3
+*.mp4
+*.gif
+*.bmp

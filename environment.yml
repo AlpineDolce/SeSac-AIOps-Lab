@@ -1,0 +1,180 @@
+name: aiops
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  # Python & Core
+  - python=3.11
+  - pip
+
+  # Essential Data Science Libraries (conda-forge)
+  - numpy>=1.24.0
+  - pandas>=2.0.0
+  - matplotlib>=3.7.0
+  - seaborn>=0.12.0
+  - scipy>=1.10.0
+  - scikit-learn>=1.3.0
+  - joblib>=1.2.0
+
+  # Additional Processing Libraries
+  - graphviz>=0.20.0  # For sklearn tree visualization
+
+  # Jupyter Environment
+  - jupyterlab>=4.0.0
+  - notebook>=6.5.0
+  - ipywidgets>=8.0.0
+  - ipython>=8.12.0
+  - nbconvert>=7.0.0
+
+  # Data Visualization
+  - plotly>=5.14.0
+  - bokeh>=3.1.0
+
+  # File Processing & I/O
+  - openpyxl>=3.1.0
+  - xlrd>=2.0.0
+  - pillow>=9.5.0
+
+  # Web & HTTP
+  - requests>=2.28.0
+  - beautifulsoup4>=4.11.0
+  - urllib3>=1.26.0
+
+  # Development Tools
+  - pytest>=7.0.0
+  - click>=8.1.0
+  - tqdm>=4.64.0
+
+  # Database Core
+  - sqlalchemy>=1.4.0
+
+  # Async Programming
+  - aiohttp>=3.8.0
+
+  # Authentication & Security
+  - bcrypt>=4.0.0
+  - pyjwt>=2.6.0
+
+  # Cloud & AWS
+  - boto3>=1.26.0
+
+  # Utility Libraries
+  - python-dateutil>=2.8.2
+  - pytz>=2023.3
+
+  # Package installations via pip
+  - pip:
+      # === MACHINE LEARNING & DATA SCIENCE ===
+      - mglearn>=0.2.0
+      - xgboost>=1.7.0
+      - optuna>=3.0.0
+      - imageio>=2.28.0
+
+      # === DEEP LEARNING FRAMEWORKS ===
+      # TensorFlow (CPU version - Windows optimized)
+      - tensorflow>=2.13.0,<2.16.0
+      # Note: Keras included with TensorFlow 2.13+
+
+      # PyTorch (CPU version - Windows optimized)
+      - torch>=2.0.0
+      - torchvision>=0.15.0
+      - torchaudio>=2.0.0
+      - torchinfo>=1.8.0
+      - torchsummary>=1.5.1
+      - tensorboard>=2.13.0
+
+      # === HYPERPARAMETER OPTIMIZATION ===
+      - hyperopt>=0.2.7
+      - ray[tune]>=2.5.0
+
+      # === EXPERIMENT TRACKING ===
+      - mlflow>=2.5.0
+      - wandb>=0.15.0
+      - dvc>=3.0.0  # Data version control
+
+      # === WEB DEVELOPMENT ===
+      - django>=4.2.0
+      - djangorestframework>=3.14.0
+      - flask>=2.3.0
+      - fastapi>=0.100.0
+      - uvicorn>=0.20.0
+      - streamlit>=1.25.0
+
+      # === ADVANCED DATA PROCESSING ===
+      - pyarrow>=12.0.0
+      - polars>=0.18.0
+
+      # === ADDITIONAL VISUALIZATION ===
+      - altair>=5.0.0
+
+      # === WEB SCRAPING & AUTOMATION ===
+      - selenium>=4.10.0
+      - chromedriver-autoinstaller>=0.6.0
+
+      # === FILE PROCESSING ===
+      - xlsxwriter>=3.1.0
+      - pypdf2>=3.0.0
+
+      # === COMPUTER VISION ===
+      - opencv-python>=4.6.0
+
+      # === NATURAL LANGUAGE PROCESSING ===
+      - nltk>=3.8.0
+      - spacy>=3.5.0
+      - transformers>=4.30.0
+      - wordcloud>=1.9.0
+      - gensim>=4.3.0
+      - textblob>=0.17.1
+
+      # === KOREAN NLP (requires Java) ===
+      - konlpy>=0.6.0
+      - jpype1>=1.4.0
+
+      # === DATABASE DRIVERS ===
+      - pymysql>=1.0.0
+      - mysqlclient>=2.2.0  # Django MySQL backend (may need Visual Studio Build Tools)
+      - pymongo>=4.3.0
+      - DBUtils>=3.0.0
+
+      # === DEVELOPMENT TOOLS ===
+      - python-dotenv>=1.0.0
+      - lxml>=4.9.0  # Fast XML/HTML parser for BeautifulSoup
+      - passlib>=1.7.4
+
+      # === DATA SOURCES ===
+      - kaggle>=1.5.12
+      - kagglehub>=0.1.0
+
+      # === FILE DOWNLOAD TOOLS ===
+      - gdown>=4.7.0  # Google Drive file downloader
+
+      # === WINDOWS-COMPATIBLE ALTERNATIVES ===
+      # Note: gunicorn (Linux WSGI) replaced with uvicorn (cross-platform ASGI)
+      # Note: redis-py can be installed separately if Redis server is needed
+      - redis>=4.5.0  # Redis Python client (server installation separate)
+      - waitress>=2.1.0  # Windows-compatible WSGI server (alternative to gunicorn)
+
+# === INSTALLATION NOTES FOR WINDOWS ===
+# 
+# 1. Java Runtime Required for KoNLPy:
+#    - Download and install Java 11+ from https://adoptium.net/
+#    - Set JAVA_HOME environment variable
+#
+# 2. Visual Studio Build Tools (for some packages):
+#    - Install "Microsoft C++ Build Tools" if compilation errors occur
+#
+# 3. System Dependencies:
+#    - Graphviz: Download from https://graphviz.org/download/ (for scikit-learn tree visualization)
+#
+# 4. Optional GPU Support:
+#    - For TensorFlow GPU: pip install tensorflow[and-cuda]
+#    - For PyTorch GPU: Visit https://pytorch.org/get-started/locally/
+#
+# 5. Redis Server (if needed):
+#    - Use Docker: docker run -d -p 6379:6379 redis:alpine
+#    - Or install Redis on WSL2
+#
+# 6. Built-in Modules (no installation needed):
+#    - os, pathlib, time, random, re, warnings, collections
+#    - imghdr, datetime, pickle, shutil
