@@ -136,6 +136,8 @@ dmypy.json
 *.keras
 *.bin
 *.zip
+*.tar
+*.gz
 
 # IDE
 .vscode/
@@ -169,5 +171,6 @@ secrets.json
 .env.local
 .env.production
 
+# Large Dataset
+aclImdb/
 
-deeplearning/aclImdb/
