@@ -1,15 +1,14 @@
-## 데이터 시각화 도구: Matplotlib, Seaborn, Plotly 핵심 가이드
-작성자: Alpine_Dolce&nbsp;&nbsp;|&nbsp;&nbsp;날짜: 2025-08-02
+<h2>데이터 시각화 도구: Matplotlib, Seaborn, Plotly 핵심 가이드</h2>
+작성자: Alpine_Dolce&nbsp;&nbsp;|&nbsp;&nbsp;날짜: 2025-07-01
 
-## 문서 목표
+<h2>문서 목표</h2>
 이 문서는 파이썬의 주요 데이터 시각화 라이브러리인 Matplotlib, Seaborn, Plotly의 핵심 개념과 활용법을 상세히 다룹니다. 각 라이브러리의 특징, 설치 방법, 기본적인 플로팅부터 고급 시각화 기법까지 다양한 예제를 통해 설명하며, 머신러닝 및 딥러닝 프로젝트에서 데이터를 효과적으로 탐색하고 결과를 시각화하는 데 필요한 지식을 제공합니다.
 
-## 목차
+<h2>목차</h2>
 
 - [1. 데이터 시각화 소개](#1-데이터-시각화-소개)
   - [1.1. 데이터 시각화의 중요성](#11-데이터-시각화의-중요성)
   - [1.2. 파이썬 시각화 생태계](#12-파이썬-시각화-생태계)
-
 - [2. Matplotlib](#2-matplotlib)
   - [2.1. Matplotlib 소개](#21-matplotlib-소개)
   - [2.2. 설치](#22-설치)
@@ -18,13 +17,21 @@
     - [2.3.2. 산점도 (Scatter Plot)](#232-산점도-scatter-plot)
     - [2.3.3. 막대 그래프 (Bar Plot)](#233-막대-그래프-bar-plot)
     - [2.3.4. 히스토그램 (Histogram)](#234-히스토그램-histogram)
+    - [2.3.5. 등고선 플롯 (Contour Plot)](#235-등고선-플롯-contour-plot)
+    - [2.3.6. 박스 플롯 (Box Plot)](#236-박스-플롯-box-plot)
+    - [2.3.7. 파이 차트 (Pie Chart)](#237-파이-차트-pie-chart)
+    - [2.3.8. 에러 바 (Error Bars)](#238-에러-바-error-bars)
+    - [2.3.9. 2D 히스토그램 및 헥사곤 비닝 (2D Histogram \& Hexbin)](#239-2d-히스토그램-및-헥사곤-비닝-2d-histogram--hexbin)
   - [2.4. 플롯 사용자 정의](#24-플롯-사용자-정의)
     - [2.4.1. 제목, 축 레이블, 범례](#241-제목-축-레이블-범례)
     - [2.4.2. 색상, 마커, 선 스타일](#242-색상-마커-선-스타일)
     - [2.4.3. 축 범위 및 눈금 설정](#243-축-범위-및-눈금-설정)
   - [2.5. 서브플롯 (Subplots)](#25-서브플롯-subplots)
   - [2.6. 플롯 저장](#26-플롯-저장)
-
+  - [2.7. 객체 지향 API (Object-Oriented API)](#27-객체-지향-api-object-oriented-api)
+  - [2.8. 특수 플롯 (Specialized Plots)](#28-특수-플롯-specialized-plots)
+    - [2.8.1. 이미지 시각화 (imshow)](#281-이미지-시각화-imshow)
+    - [2.8.2. 3D 시각화 (mplot3d)](#282-3d-시각화-mplot3d)
 - [3. Seaborn](#3-seaborn)
   - [3.1. Seaborn 소개](#31-seaborn-소개)
   - [3.2. 설치](#32-설치)
@@ -48,8 +55,11 @@
   - [3.7. 행렬 플롯 (Matrix Plots)](#37-행렬-플롯-matrix-plots)
     - [3.7.1. `heatmap()`](#371-heatmap)
     - [3.7.2. `clustermap()`](#372-clustermap)
-  - [3.8. 사용자 정의 및 테마](#38-사용자-정의-및-테마)
-
+  - [3.8. 다변수 분석 플롯 (Multivariate Analysis Plots)](#38-다변수-분석-플롯-multivariate-analysis-plots)
+    - [3.8.1. `pairplot()`](#381-pairplot)
+    - [3.8.2. `jointplot()`](#382-jointplot)
+  - [3.9. 고급 플롯 제어: FacetGrid](#39-고급-플롯-제어-facetgrid)
+  - [3.10. 사용자 정의 및 테마](#310-사용자-정의-및-테마)
 - [4. Plotly](#4-plotly)
   - [4.1. Plotly 소개](#41-plotly-소개)
   - [4.2. 설치](#42-설치)
@@ -58,11 +68,12 @@
     - [4.3.2. 라인 플롯 (`px.line()`)](#432-라인-플롯-pxline)
     - [4.3.3. 막대 그래프 (`px.bar()`)](#433-막대-그래프-pxbar)
     - [4.3.4. 파이 차트 (`px.pie()`)](#434-파이-차트-pxpie)
+    - [4.3.5. 3D 산점도 (`px.scatter_3d()`)](#435-3d-산점도-pxscatter_3d)
+    - [4.3.6. 지리 정보 시각화 (`px.scatter_mapbox()`)](#436-지리-정보-시각화-pxscatter_mapbox)
   - [4.4. 인터랙티브 플롯](#44-인터랙티브-플롯)
   - [4.5. 서브플롯](#45-서브플롯)
   - [4.6. 플롯 저장](#46-플롯-저장)
   - [4.7. Dash와의 통합](#47-dash와의-통합)
-
 - [5. 라이브러리 비교 및 사용 가이드](#5-라이브러리-비교-및-사용-가이드)
   - [5.1. Matplotlib vs. Seaborn vs. Plotly](#51-matplotlib-vs-seaborn-vs-plotly)
   - [5.2. 최적의 라이브러리 선택 가이드](#52-최적의-라이브러리-선택-가이드)
@@ -206,6 +217,145 @@ plt.hist(data, bins=30, color='green', alpha=0.7, density=True)
 plt.title("Density Histogram of Random Data")
 plt.xlabel("Value")
 plt.ylabel("Density")
+plt.show()
+```
+
+#### 2.3.5. 등고선 플롯 (Contour Plot)
+등고선 플롯은 3차원 데이터를 2차원 평면에 표현하는 방법입니다. 동일한 값을 갖는 지점들을 선으로 연결하여 지형도처럼 표현하며, 두 변수에 따른 제3의 변수(높이)의 변화를 시각화하는 데 매우 유용합니다. 데이터 과학에서는 두 변수의 확률 밀도 함수나 머신러닝 모델의 결정 경계(Decision Boundary)를 시각화하는 데 자주 사용됩니다.
+
+- **`plt.contour()`**: 등고선(선)을 그립니다.
+- **`plt.contourf()`**: 등고선 사이의 영역을 색으로 채웁니다. (`f`는 'filled'를 의미)
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성
+x = np.linspace(-3.0, 3.0, 100)
+y = np.linspace(-3.0, 3.0, 100)
+X, Y = np.meshgrid(x, y)
+Z = np.exp(-(X**2 + Y**2)) * np.sin(X) * np.cos(Y)
+
+# 등고선 플롯 그리기
+plt.figure(figsize=(12, 5))
+
+# 등고선 (선)
+plt.subplot(1, 2, 1)
+contour = plt.contour(X, Y, Z, 10, colors='black') # 10개의 레벨로 등고선
+plt.clabel(contour, inline=True, fontsize=8) # 등고선에 값 표시
+plt.title('Contour Plot')
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+
+# 채워진 등고선
+plt.subplot(1, 2, 2)
+contourf = plt.contourf(X, Y, Z, 20, cmap='viridis') # 20개의 레벨, viridis 컬러맵
+plt.colorbar(label='Value') # 컬러바 추가
+plt.title('Filled Contour Plot')
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+
+plt.tight_layout()
+plt.show()
+```
+
+#### 2.3.6. 박스 플롯 (Box Plot)
+박스 플롯(상자 수염 그림)은 데이터의 분포를 사분위수를 이용하여 시각화하는 데 매우 효과적인 도구입니다. 데이터의 중앙값(median), 25% 지점(Q1), 75% 지점(Q3), 그리고 이상치(outlier)를 한눈에 보여주어 여러 그룹 간의 데이터 분포를 비교하는 데 널리 사용됩니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성 (세 그룹의 데이터)
+data1 = np.random.normal(0, 1, 100)
+data2 = np.random.normal(1, 1.5, 100)
+data3 = np.random.normal(-1, 0.5, 100)
+data = [data1, data2, data3]
+
+# 박스 플롯 그리기
+plt.figure(figsize=(8, 6))
+plt.boxplot(data, labels=['Group 1', 'Group 2', 'Group 3'])
+plt.title('Box Plot of Three Groups')
+plt.xlabel('Group')
+plt.ylabel('Value')
+plt.grid(True)
+plt.show()
+```
+
+#### 2.3.7. 파이 차트 (Pie Chart)
+파이 차트는 전체에 대한 각 부분의 비율을 부채꼴의 면적으로 나타내는 그래프입니다. 데이터의 구성 비율을 직관적으로 보여줄 때 유용하지만, 항목이 너무 많거나 비율 차이가 미미할 경우 해석이 어려울 수 있어 사용에 주의가 필요합니다.
+
+```python
+import matplotlib.pyplot as plt
+
+# 데이터 생성
+labels = ['A', 'B', 'C', 'D']
+sizes = [15, 30, 45, 10] # 각 항목의 비율
+explode = (0, 0.1, 0, 0)  # 'B' 항목을 약간 돋보이게 함
+
+# 파이 차트 그리기
+plt.figure(figsize=(7, 7))
+plt.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+        shadow=True, startangle=90)
+plt.title('Pie Chart of Proportions')
+plt.axis('equal')  # 파이 차트를 원형으로 유지
+plt.show()
+```
+
+#### 2.3.8. 에러 바 (Error Bars)
+에러 바는 데이터 포인트의 측정값에 대한 불확실성이나 오차 범위를 시각적으로 표현합니다. 주로 평균값과 함께 표준 편차, 표준 오차, 신뢰 구간 등을 나타내는 데 사용되며, 데이터의 신뢰도를 평가하는 데 중요한 정보를 제공합니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성
+x = np.arange(5)
+y = [20, 35, 30, 25, 40]
+# 각 데이터 포인트의 오차 (예: 표준 편차)
+y_error = [2, 3, 4, 2, 5]
+
+# 에러 바를 포함한 막대 그래프 그리기
+plt.figure(figsize=(8, 6))
+plt.bar(x, y, yerr=y_error, capsize=5, color='skyblue', ecolor='darkred')
+plt.title('Bar Plot with Error Bars')
+plt.xlabel('Group')
+plt.ylabel('Measurement')
+plt.xticks(x, ['G1', 'G2', 'G3', 'G4', 'G5'])
+plt.show()
+```
+
+#### 2.3.9. 2D 히스토그램 및 헥사곤 비닝 (2D Histogram & Hexbin)
+데이터 포인트가 매우 많아 산점도에서 점들이 서로 겹쳐 분포를 파악하기 어려운 과밀 플롯(overplotting) 문제가 발생할 때, 2D 히스토그램이나 헥사곤 비닝을 사용하면 유용합니다. 이들은 2차원 공간을 사각형 또는 육각형으로 나누고 각 영역에 포함된 데이터 포인트의 개수를 색상으로 표현하여 데이터의 밀도를 효과적으로 시각화합니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성 (다변량 정규 분포)
+mean = [0, 0]
+cov = [[1, 1], [1, 2]]
+x, y = np.random.multivariate_normal(mean, cov, 10000).T
+
+plt.figure(figsize=(12, 5))
+
+# 2D 히스토그램
+plt.subplot(1, 2, 1)
+plt.hist2d(x, y, bins=30, cmap='Blues')
+plt.colorbar(label='Count in bin')
+plt.title('2D Histogram')
+plt.xlabel('X-variable')
+plt.ylabel('Y-variable')
+
+# 헥사곤 비닝 플롯
+plt.subplot(1, 2, 2)
+plt.hexbin(x, y, gridsize=30, cmap='inferno')
+plt.colorbar(label='Count in bin')
+plt.title('Hexbin Plot')
+plt.xlabel('X-variable')
+plt.ylabel('Y-variable')
+
+plt.tight_layout()
 plt.show()
 ```
 
@@ -359,6 +509,84 @@ print("'sine_wave.pdf' 파일이 저장되었습니다.")
 # 해상도(dpi) 설정하여 저장
 plt.savefig("sine_wave_high_res.png", dpi=300)
 print("'sine_wave_high_res.png' 파일이 고해상도로 저장되었습니다.")
+
+plt.show()
+```
+
+### 2.7. 객체 지향 API (Object-Oriented API)
+Matplotlib에는 두 가지 사용 방식이 있습니다. 하나는 지금까지 주로 사용한 `pyplot` 상태 머신(state-machine) 인터페이스이고, 다른 하나는 실무에서 더 권장되는 **객체 지향(Object-Oriented)** 인터페이스입니다.
+
+- **Pyplot 인터페이스**: `plt.plot()`, `plt.title()`처럼 현재 활성화된 Figure나 Axes에 암묵적으로 작동합니다. 코드가 간결하여 간단한 플롯에 적합합니다.
+- **객체 지향 인터페이스**: `fig, ax = plt.subplots()`로 Figure(그림 전체)와 Axes(개별 플롯) 객체를 명시적으로 생성하고, `ax.plot()`, `ax.set_title()`처럼 각 객체의 메서드를 호출하여 제어합니다. 복잡한 플롯이나 여러 개의 서브플롯을 다룰 때 훨씬 더 유연하고 코드의 가독성과 재사용성이 높습니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+# 객체 지향 방식으로 플롯 그리기
+fig, ax = plt.subplots(figsize=(8, 5))
+
+ax.plot(x, y, label='Sine Wave', color='coral')
+ax.set_title('Object-Oriented Plotting')
+ax.set_xlabel('X-axis')
+ax.set_ylabel('Y-axis')
+ax.legend()
+ax.grid(True)
+
+plt.show()
+```
+
+### 2.8. 특수 플롯 (Specialized Plots)
+
+#### 2.8.1. 이미지 시각화 (imshow)
+`imshow()` 함수는 2D 배열이나 행렬 데이터를 이미지 형태로 시각화합니다. 머신러닝에서는 모델의 **혼동 행렬(Confusion Matrix)**이나 이미지 데이터 자체를 시각화하는 데 매우 유용하게 사용됩니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 5x5 랜덤 행렬 데이터 생성
+matrix = np.random.rand(5, 5)
+
+plt.figure(figsize=(6, 5))
+plt.imshow(matrix, cmap='viridis') # viridis 컬러맵 사용
+plt.colorbar(label='Value')
+plt.title('Image Show (imshow) of a Matrix')
+
+# 각 셀에 값 표시
+for i in range(5):
+    for j in range(5):
+        plt.text(j, i, f'{matrix[i, j]:.2f}', ha='center', va='center', color='white')
+
+plt.show()
+```
+
+#### 2.8.2. 3D 시각화 (mplot3d)
+Matplotlib의 `mplot3d` 툴킷을 사용하면 3차원 공간에 데이터를 시각화할 수 있습니다. 3D 산점도, 곡면, 와이어프레임 등 다양한 3D 플롯을 지원하여 다차원 데이터의 구조를 입체적으로 파악하는 데 도움을 줍니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 3D Axes 객체 생성
+fig = plt.figure(figsize=(8, 6))
+ax = fig.add_subplot(111, projection='3d')
+
+# 3D 산점도 데이터 생성
+z = np.linspace(0, 1, 100)
+x = z * np.sin(20 * z)
+y = z * np.cos(20 * z)
+
+# 3D 산점도 그리기
+ax.scatter3D(x, y, z, c=z, cmap='Blues')
+
+ax.set_title('3D Scatter Plot')
+ax.set_xlabel('X-axis')
+ax.set_ylabel('Y-axis')
+ax.set_zlabel('Z-axis')
 
 plt.show()
 ```
@@ -648,7 +876,63 @@ plt.title("Clustermap of Iris Features")
 plt.show()
 ```
 
-### 3.8. 사용자 정의 및 테마
+### 3.8. 다변수 분석 플롯 (Multivariate Analysis Plots)
+Seaborn의 가장 강력한 기능 중 하나로, 데이터셋의 여러 변수 간 관계를 한 번에 파악할 수 있는 고수준 플롯을 제공합니다. 탐색적 데이터 분석(EDA) 과정에서 매우 유용합니다.
+
+#### 3.8.1. `pairplot()`
+Pair Plot은 데이터프레임의 모든 숫자형 변수 쌍에 대한 산점도(scatterplot)를 그리고, 대각선에는 각 변수의 분포(히스토그램 또는 KDE)를 보여줍니다. 데이터셋의 전반적인 관계와 분포를 빠르게 파악하는 데 최고의 도구입니다.
+
+```python
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+iris = sns.load_dataset("iris")
+
+sns.pairplot(iris, hue="species") # 종(species)에 따라 색상 구분
+plt.suptitle("Pair Plot of Iris Dataset", y=1.02) # 전체 제목 추가
+plt.show()
+```
+
+#### 3.8.2. `jointplot()`
+Joint Plot은 두 변수 간의 관계와 각 변수의 분포를 동시에 시각화합니다. 중앙에는 산점도나 헥스빈 플롯이, 위쪽과 오른쪽에는 각 변수의 히스토그램이나 KDE 플롯이 배치됩니다. 두 변수를 깊이 있게 분석할 때 매우 효과적입니다.
+
+```python
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+tips = sns.load_dataset("tips")
+
+# 산점도와 히스토그램을 함께 표시
+sns.jointplot(x="total_bill", y="tip", data=tips, kind="scatter") # kind: scatter, hex, kde, reg
+plt.suptitle("Joint Plot of Total Bill and Tip", y=1.02)
+plt.show()
+
+# 헥스빈(hexbin)과 KDE를 함께 표시
+sns.jointplot(x="total_bill", y="tip", data=tips, kind="hex", cmap="hot")
+plt.suptitle("Joint Plot (Hexbin) of Total Bill and Tip", y=1.02)
+plt.show()
+```
+
+### 3.9. 고급 플롯 제어: FacetGrid
+`FacetGrid`는 데이터의 하위 집합(subset)에 따라 여러 개의 서브플롯(facet)을 만들어 동일한 종류의 그래프를 그리는 강력한 기능입니다. `col`, `row`, `hue` 등의 변수를 기준으로 데이터를 나누어 시각화함으로써, 복잡한 데이터의 패턴을 다각도에서 비교 분석할 수 있습니다.
+
+```python
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+tips = sns.load_dataset("tips")
+
+# FacetGrid 객체 생성
+g = sns.FacetGrid(tips, col="time", row="sex")
+
+# 각 서브플롯에 그래프 매핑
+g.map(sns.scatterplot, "total_bill", "tip", alpha=.7)
+g.add_legend()
+
+plt.show()
+```
+
+### 3.10. 사용자 정의 및 테마
 Seaborn은 Matplotlib의 기능을 상속받으므로, Matplotlib의 함수들을 사용하여 플롯을 추가적으로 커스터마이징할 수 있습니다. 또한, Seaborn은 자체적으로 다양한 테마와 스타일을 제공하여 플롯의 미적 품질을 쉽게 변경할 수 있습니다.
 
 ```python
@@ -787,6 +1071,35 @@ fig.show()
 
 # 요일별 팁 비율 (각 요일 내 흡연 여부 비율)
 fig = px.pie(tips, values='tip', names='day', title="Tip Proportion by Day", hole=0.3) # hole로 도넛 차트 생성
+fig.show()
+```
+
+#### 4.3.5. 3D 산점도 (`px.scatter_3d()`)
+Plotly는 인터랙티브한 3D 시각화에 매우 강력합니다. `px.scatter_3d`를 사용하면 3차원 공간에 데이터를 표현하고, 마우스로 회전, 확대/축소하며 다각도에서 데이터를 탐색할 수 있습니다.
+
+```python
+import plotly.express as px
+
+iris = px.data.iris()
+
+fig = px.scatter_3d(iris, x='sepal_length', y='sepal_width', z='petal_width',
+                    color='species', title="3D Scatter Plot of Iris Dataset")
+fig.show()
+```
+
+#### 4.3.6. 지리 정보 시각화 (`px.scatter_mapbox()`)
+Plotly는 지도 위에 데이터를 시각화하는 강력한 기능을 제공합니다. `px.scatter_mapbox`를 사용하면 위도, 경도 데이터를 지도 위의 점으로 표현할 수 있습니다. `mapbox_style`을 "open-street-map"으로 설정하면 별도의 API 토큰 없이 사용할 수 있습니다.
+
+```python
+import plotly.express as px
+
+# 내장 데이터셋 사용 (캐나다 카셰어링 위치 데이터)
+carshare = px.data.carshare()
+
+fig = px.scatter_mapbox(carshare, lat="centroid_lat", lon="centroid_lon", color="peak_hour",
+                        size="car_hours", size_max=15, zoom=10,
+                        mapbox_style="open-street-map",
+                        title="Carshare Locations in Montreal")
 fig.show()
 ```
 

@@ -17,6 +17,7 @@
   - [2.2. 데이터 스케일링 (Data Scaling)](#22-데이터-스케일링-data-scaling)
   - [2.3. 범주형 데이터 인코딩 (Categorical Data Encoding)](#23-범주형-데이터-인코딩-categorical-data-encoding)
   - [2.4. 특성 공학 (Feature Engineering)](#24-특성-공학-feature-engineering)
+  - [2.5. 불균형 데이터 처리 (Handling Imbalanced Data)](#25-불균형-데이터-처리-handling-imbalanced-data)
 - [3. 지도 학습 (Supervised Learning)](#3-지도-학습-supervised-learning)
   - [3.1. 분류 (Classification)](#31-분류-classification)
   - [3.2. 회귀 (Regression)](#32-회귀-regression)
@@ -31,6 +32,7 @@
 - [6. 파이프라인 (Pipeline)](#6-파이프라인-pipeline)
   - [6.1. 파이프라인의 개념 및 장점](#61-파이프라인의-개념-및-장점)
   - [6.2. `Pipeline` 사용 예시](#62-pipeline-사용-예시)
+  - [6.3. ColumnTransformer: 혼합 데이터 타입 전처리](#63-columntransformer-혼합-데이터-타입-전처리)
 - [7. 모델 영속성 (Model Persistence)](#7-모델-영속성-model-persistence)
   - [7.1. 모델 저장 및 로드](#71-모델-저장-및-로드)
 - [8. Scikit-learn과 다른 라이브러리 연동](#8-scikit-learn과-다른-라이브러리-연동)
@@ -423,6 +425,64 @@ print("선택된 특성 인덱스 (True: 선택됨):", selector.support_)
 print("특성 랭킹 (1이 가장 중요):", selector.ranking_)
 ```
 
+### 2.5. 불균형 데이터 처리 (Handling Imbalanced Data)
+분류 문제에서 각 클래스에 속한 데이터의 양이 현저하게 차이 나는 경우를 클래스 불균형(Class Imbalance)이라고 합니다. 예를 들어, 신용카드 사기 탐지(대부분 정상, 극소수 사기)나 의료 진단(대부분 음성, 일부 양성)과 같은 문제입니다. 이러한 데이터로 모델을 학습시키면, 모델은 다수 클래스에 편향되어 소수 클래스를 잘 예측하지 못하는 경향이 있습니다.
+
+**1. `class_weight` 파라미터 사용**
+많은 Scikit-learn 분류 모델(예: `LogisticRegression`, `SVC`, `RandomForestClassifier`)은 `class_weight='balanced'`라는 파라미터를 제공합니다. 이 옵션을 설정하면, 모델은 소수 클래스의 데이터에 더 높은 가중치를 부여하여 학습함으로써 클래스 불균형의 영향을 완화합니다.
+
+```python
+from sklearn.linear_model import LogisticRegression
+from sklearn.datasets import make_classification
+
+# 불균형 데이터 생성 (95%가 클래스 0, 5%가 클래스 1)
+X, y = make_classification(n_samples=1000, n_features=10, n_informative=5, 
+                           n_redundant=0, n_classes=2, n_clusters_per_class=1, 
+                           weights=[0.95, 0.05], flip_y=0, random_state=42)
+
+# class_weight를 사용하지 않은 모델
+model_unbalanced = LogisticRegression(random_state=42)
+model_unbalanced.fit(X, y)
+
+# class_weight='balanced'를 사용한 모델
+model_balanced = LogisticRegression(class_weight='balanced', random_state=42)
+model_balanced.fit(X, y)
+
+# (실제로는 예측 및 평가를 통해 두 모델의 성능 차이를 확인해야 함)
+print("'class_weight=balanced' 옵션으로 불균형 데이터 처리 모델 학습 완료.")
+```
+
+**2. 리샘플링 (Resampling)**
+리샘플링은 데이터의 양을 조절하여 클래스 불균형을 해소하는 기법입니다. `imbalanced-learn`이라는 별도의 라이브러리를 Scikit-learn과 함께 사용하는 것이 일반적입니다.
+
+- **언더샘플링 (Undersampling)**: 다수 클래스의 데이터를 무작위로 제거하여 소수 클래스의 데이터 수와 맞춥니다. 데이터 손실이 발생할 수 있다는 단점이 있습니다.
+- **오버샘플링 (Oversampling)**: 소수 클래스의 데이터를 복제하거나 새롭게 생성하여 다수 클래스의 데이터 수와 맞춥니다. 과적합의 위험이 있을 수 있습니다.
+  - **SMOTE (Synthetic Minority Over-sampling Technique)**: 가장 대표적인 오버샘플링 기법으로, 소수 클래스 데이터 포인트들 사이의 공간에 새로운 합성(synthetic) 데이터를 생성합니다.
+
+**SMOTE 사용 예시 (`imbalanced-learn` 라이브러리 필요)**:
+```bash
+# imbalanced-learn 설치
+# pip install imbalanced-learn
+```
+
+```python
+from sklearn.datasets import make_classification
+from imblearn.over_sampling import SMOTE
+import numpy as np
+
+# 불균형 데이터 생성
+X, y = make_classification(n_samples=1000, weights=[0.95, 0.05], random_state=42)
+print(f"원본 데이터 클래스 분포: {np.bincount(y)}")
+
+# SMOTE 적용
+smote = SMOTE(random_state=42)
+X_resampled, y_resampled = smote.fit_resample(X, y)
+
+print(f"SMOTE 적용 후 데이터 클래스 분포: {np.bincount(y_resampled)}")
+
+# 이제 X_resampled, y_resampled를 사용하여 모델을 학습시킵니다.
+```
+
 ## 3. 지도 학습 (Supervised Learning)
 
 지도 학습은 가장 일반적인 머신러닝 패러다임으로, 레이블(정답)이 있는 훈련 데이터를 사용하여 모델을 학습시킵니다. Scikit-learn은 다양한 지도 학습 알고리즘을 제공하며, 크게 분류(Classification)와 회귀(Regression) 문제로 나눌 수 있습니다.
@@ -736,6 +796,59 @@ print(f"라쏘 회귀 R2: {r2:.2f}")
 
 # 회귀 계수 확인 (일부 계수가 0이 될 수 있음)
 print(f"계수 (Coefficients): {model.coef_}")
+```
+
+<h4>3.2.4. 엘라스틱넷 회귀 (ElasticNet Regression)</h4>
+엘라스틱넷은 릿지(L2)와 라쏘(L1) 정규화를 모두 결합한 선형 회귀 모델입니다. 릿지의 안정성과 라쏘의 특성 선택 능력을 모두 활용할 수 있어, 특성 간에 높은 상관관계가 있는 데이터셋에서 좋은 성능을 보입니다. `l1_ratio` 파라미터를 통해 L1과 L2 규제의 비율을 조절합니다 (`l1_ratio=0`이면 릿지, `l1_ratio=1`이면 라쏘).
+
+```python
+import numpy as np
+from sklearn.linear_model import ElasticNet
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_regression
+from sklearn.metrics import mean_squared_error, r2_score
+
+X, y = make_regression(n_samples=100, n_features=10, noise=20, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# 엘라스틱넷 회귀 모델 생성 및 학습 (alpha=0.1, l1_ratio=0.5)
+model = ElasticNet(alpha=0.1, l1_ratio=0.5, random_state=42)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"엘라스틱넷 회귀 MSE: {mse:.2f}")
+print(f"엘라스틱넷 회귀 R2: {r2:.2f}")
+print(f"계수 (Coefficients): {model.coef_}")
+```
+
+<h4>3.2.5. 앙상블 회귀 모델 (Ensemble Regressors)</h4>
+분류와 마찬가지로, 회귀 문제에서도 앙상블 기법은 매우 강력한 성능을 보입니다. `RandomForestRegressor`와 `GradientBoostingRegressor`가 대표적입니다.
+
+```python
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_regression
+from sklearn.metrics import mean_squared_error
+
+X, y = make_regression(n_samples=100, n_features=10, noise=20, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# 랜덤 포레스트 회귀
+rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+y_pred_rf = rf_model.predict(X_test)
+mse_rf = mean_squared_error(y_test, y_pred_rf)
+print(f"랜덤 포레스트 회귀 MSE: {mse_rf:.2f}")
+
+# 그레디언트 부스팅 회귀
+gb_model = GradientBoostingRegressor(n_estimators=100, random_state=42)
+gb_model.fit(X_train, y_train)
+y_pred_gb = gb_model.predict(X_test)
+mse_gb = mean_squared_error(y_test, y_pred_gb)
+print(f"그레디언트 부스팅 회귀 MSE: {mse_gb:.2f}")
 ```
 
 ## 4. 비지도 학습 (Unsupervised Learning)
@@ -1218,20 +1331,31 @@ print(f"혼동 행렬:\n{cm}")
 <h4>5.4.2. 회귀 모델 평가 지표</h4>
 회귀 모델의 성능을 평가하는 데 사용되는 주요 지표들입니다.
 
-<h5>평균 제곱 오차 (Mean Squared Error, MSE)</h5>
-예측값과 실제값의 차이(오차)를 제곱하여 평균한 값입니다. 오차의 크기를 나타내며, 값이 작을수록 모델의 예측 성능이 좋습니다. 이상치에 민감하게 반응합니다.
+<h5>평균 절대 오차 (Mean Absolute Error, MAE)</h5>
+예측값과 실제값의 차이(오차)의 절댓값을 취하여 평균한 값입니다. 오차의 크기를 직관적으로 이해하는 데 도움이 되며, 이상치에 덜 민감합니다.
 
-$$ MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 $$
+$ MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i| $
+
+<h5>평균 제곱 오차 (Mean Squared Error, MSE)</h5>
+예측값과 실제값의 차이(오차)를 제곱하여 평균한 값입니다. 오차의 크기를 나타내며, 값이 작을수록 모델의 예측 성능이 좋습니다. 오차를 제곱하기 때문에 이상치에 민감하게 반응합니다.
+
+$ MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 $
+
+<h5>평균 제곱근 오차 (Root Mean Squared Error, RMSE)</h5>
+MSE에 제곱근을 취한 값입니다. MSE와 마찬가지로 이상치에 민감하지만, 오차를 실제값과 같은 단위로 해석할 수 있어 직관적입니다.
+
+$ RMSE = \sqrt{MSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2} $
 
 *   $y_i$: 실제값
 *   $\hat{y}_i$: 예측값
 *   $n$: 데이터 포인트 수
 
 ```python
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_regression
+import numpy as np
 
 X, y = make_regression(n_samples=100, n_features=1, noise=20, random_state=42)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
@@ -1240,14 +1364,19 @@ model = LinearRegression()
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
+mae = mean_absolute_error(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse) # Scikit-learn에는 rmse 함수가 없으므로 mse에 np.sqrt() 사용
+
+print(f"MAE: {mae:.2f}")
 print(f"MSE: {mse:.2f}")
+print(f"RMSE: {rmse:.2f}")
 ```
 
 <h5>R-제곱 (R-squared)</h5>
 결정 계수(Coefficient of Determination)라고도 불리며, 모델이 분산을 얼마나 잘 설명하는지를 나타냅니다. 0과 1 사이의 값을 가지며, 1에 가까울수록 모델이 데이터를 잘 설명합니다. 음수 값도 가질 수 있으며, 이는 모델이 평균보다도 성능이 나쁘다는 것을 의미합니다.
 
-$$ R^2 = 1 - \frac{SS_{res}}{SS_{tot}} $$
+$ R^2 = 1 - \frac{SS_{res}}{SS_{tot}} $
 
 *   $SS_{res}$: 잔차 제곱합 (Sum of Squares of Residuals) = $\sum_{i=1}^{n} (y_i - \hat{y}_i)^2$
 *   $SS_{tot}$: 총 제곱합 (Total Sum of Squares) = $\sum_{i=1}^{n} (y_i - \bar{y})^2$
@@ -1343,6 +1472,64 @@ print(f"최고 교차 검증 정확도: {grid_search_pipeline.best_score_:.4f}")
 # 최적의 모델
 best_model = grid_search_pipeline.best_estimator_
 print(f"최적의 모델: {best_model}")
+```
+### 6.3. ColumnTransformer: 혼합 데이터 타입 전처리
+실제 데이터셋은 수치형 특성과 범주형 특성이 혼합된 경우가 많습니다. `Pipeline`은 모든 특성에 동일한 변환을 적용하지만, `ColumnTransformer`를 사용하면 각기 다른 컬럼 그룹에 서로 다른 전처리 단계를 적용할 수 있습니다. 이는 파이프라인 내에서 복잡한 전처리 로직을 구현하는 핵심 도구입니다.
+
+**주요 기능**:
+- **컬럼별 변환**: 특정 컬럼에는 `StandardScaler`를, 다른 컬럼에는 `OneHotEncoder`를 적용하는 등 컬럼별로 다른 변환기를 지정할 수 있습니다.
+- **파이프라인 통합**: `ColumnTransformer` 자체를 `Pipeline`의 한 단계로 포함하여, 전처리부터 모델 학습까지의 전체 워크플로우를 완벽하게 자동화할 수 있습니다.
+
+**`ColumnTransformer` 사용 예시**:
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# 가상 데이터 생성 (수치형 + 범주형)
+data = {
+    'age': [25, 45, 35, 50, 23],
+    'city': ['New York', 'London', 'Paris', 'New York', 'Paris'],
+    'salary': [50000, 80000, 65000, 90000, 45000],
+    'purchased': [0, 1, 1, 1, 0]
+}
+df = pd.DataFrame(data)
+
+X = df.drop('purchased', axis=1)
+y = df['purchased']
+
+# 특성별로 분리
+numeric_features = ['age', 'salary']
+categorical_features = ['city']
+
+# ColumnTransformer 정의
+# 각 변환기는 (이름, 변환기, 적용할 컬럼 리스트) 튜플로 구성
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', StandardScaler(), numeric_features),
+        ('cat', OneHotEncoder(), categorical_features)
+    ])
+
+# 파이프라인 구축: ColumnTransformer -> LogisticRegression
+pipeline_ct = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', LogisticRegression(random_state=42))
+])
+
+# 훈련 세트와 테스트 세트 분리
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 파이프라인 학습
+pipeline_ct.fit(X_train, y_train)
+
+# 예측 및 평가
+y_pred = pipeline_ct.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"ColumnTransformer를 사용한 파이프라인 정확도: {accuracy:.4f}")
 ```
 
 

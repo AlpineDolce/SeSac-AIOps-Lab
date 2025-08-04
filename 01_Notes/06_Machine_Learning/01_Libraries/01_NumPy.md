@@ -11,6 +11,12 @@
   - [1.2. ML/DL에서 NumPy의 중요성](#12-mldl에서-numpy의-중요성)
 - [2. NumPy 핵심 데이터 구조: ndarray](#2-numpy-핵심-데이터-구조-ndarray)
   - [2.1. ndarray 생성](#21-ndarray-생성)
+    - [2.1.1. 파이썬 리스트로부터 생성](#211-파이썬-리스트로부터-생성)
+    - [2.1.2. `np.arange()`를 이용한 생성](#212-nparange를-이용한-생성)
+    - [2.1.3. `np.linspace()`를 이용한 생성](#213-nplinspace를-이용한-생성)
+    - [2.1.4. 특수 배열 생성 함수](#214-특수-배열-생성-함수)
+    - [2.1.5. `_like` 함수를 이용한 생성](#215-_like-함수를-이용한-생성)
+    - [2.1.6. 데이터 타입 지정 및 변환](#216-데이터-타입-지정-및-변환)
   - [2.2. ndarray의 속성](#22-ndarray의-속성)
 - [3. ndarray 인덱싱 및 슬라이싱](#3-ndarray-인덱싱-및-슬라이싱)
   - [3.1. 단일 요소 접근](#31-단일-요소-접근)
@@ -30,7 +36,8 @@
   - [5.2. 여러 배열 저장/로드: `np.savez()`](#52-여러-배열-저장로드-npsavez)
 - [6. 기타 유용한 기능](#6-기타-유용한-기능)
   - [6.1. 난수 생성](#61-난수-생성)
-  - [6.2. 푸리에 변환 (Fourier Transform)](#62-푸리에-변환-fourier-transform)
+  - [6.2. 샘플링 및 순열](#62-샘플링-및-순열)
+  - [6.3. 푸리에 변환 (Fourier Transform)](#63-푸리에-변환-fourier-transform)
 - [7. 선형대수 (Linear Algebra)](#7-선형대수-linear-algebra)
   - [7.1. 역행렬 (Inverse Matrix)](#71-역행렬-inverse-matrix)
   - [7.2. 행렬식 (Determinant)](#72-행렬식-determinant)
@@ -47,6 +54,7 @@
   - [8.6. 성능 최적화 팁](#86-성능-최적화-팁)
   - [8.7. NumPy와 다른 라이브러리 연동](#87-numpy와-다른-라이브러리-연동)
   - [8.8. 실제 ML/DL 적용 사례](#88-실제-mldl-적용-사례)
+  - [8.9. 다항식 피팅 (Polynomial Fitting)](#89-다항식-피팅-polynomial-fitting)
 
 ---
 
@@ -105,7 +113,7 @@ NumPy의 핵심은 `ndarray` (N-dimensional array) 객체입니다. 이는 동�
 
 ### 2.1. ndarray 생성
 
-<h4>2.1.1. 파이썬 리스트로부터 생성</h4>
+#### 2.1.1. 파이썬 리스트로부터 생성
 가장 일반적인 `ndarray` 생성 방법은 파이썬 리스트를 `np.array()` 함수에 전달하는 것입니다.
 
 ```python
@@ -130,7 +138,7 @@ print(f"3차원 배열의 차원: {arr3d.ndim}")
 print(f"3차원 배열의 형태: {arr3d.shape}") # (깊이, 행의 수, 열의 수)
 ```
 
-<h4>2.1.2. `np.arange()`를 이용한 생성</h4>
+#### 2.1.2. `np.arange()`를 이용한 생성
 `np.arange()` 함수는 파이썬의 `range()` 함수와 유사하게, 지정된 범위 내에서 일정한 간격으로 떨어진 값들로 배열을 생성합니다.
 
 -   `np.arange(n)`: 0부터 `n-1`까지 1씩 증가하는 배열 생성.
@@ -156,7 +164,7 @@ arr_range4 = np.arange(2, 11, 2)
 print(f"np.arange(2, 11, 2): {arr_range4}") # [2 4 6 8 10]
 ```
 
-<h4>2.1.3. `np.linspace()`를 이용한 생성</h4>
+#### 2.1.3. `np.linspace()`를 이용한 생성
 `np.linspace()` 함수는 지정된 시작 값과 종료 값 사이를 균등한 간격으로 나눈 `num`개의 값으로 배열을 생성합니다. 그래프의 좌표 등을 만들 때 유용하게 사용됩니다.
 
 -   `np.linspace(start, stop, num)`: `start`부터 `stop`까지 `num`개의 균등한 간격의 값 생성. `stop` 값을 포함합니다.
@@ -171,7 +179,7 @@ print(f"np.linspace(1, 10, 50) (마지막 5개): {arr_linspace[-5:]}")
 print(f"생성된 배열의 개수: {len(arr_linspace)}") # 50
 ```
 
-<h4>2.1.4. 특수 배열 생성 함수</h4>
+#### 2.1.4. 특수 배열 생성 함수
 NumPy는 특정 패턴을 가진 배열을 빠르게 생성할 수 있는 다양한 함수를 제공합니다. 이들은 초기화, 테스트, 또는 특정 수학적 연산에 유용합니다.
 
 -   `np.zeros(shape, dtype=float)`: 모든 요소가 0인 배열 생성.
@@ -229,7 +237,7 @@ print(f"\n4x4 단위 행렬 (identity):\n{identity_arr}")
 #  [0. 0. 0. 1.]]
 ```
 
-<h4>2.1.5. `_like` 함수를 이용한 생성</h4>
+#### 2.1.5. `_like` 함수를 이용한 생성
 
 `_like` 접미사가 붙은 함수들은 기존 배열의 형태(shape)와 데이터 타입(dtype)을 그대로 사용하여 새로운 배열을 생성할 때 유용합니다. 이는 특히 딥러닝에서 텐서(tensor) 연산을 할 때 입력 텐서와 동일한 형태의 텐서를 생성해야 할 경우에 자주 사용됩니다.
 
@@ -268,7 +276,7 @@ print(f"\nempty_like:\n{empty_like_arr}")
 print(f"형태: {empty_like_arr.shape}, 데이터 타입: {empty_like_arr.dtype}")
 ```
 
-<h4>2.1.6. 데이터 타입 지정 및 변환</h4>
+#### 2.1.6. 데이터 타입 지정 및 변환
 
 NumPy 배열의 요소들은 모두 동일한 데이터 타입(dtype)을 가집니다. 데이터 타입을 명시적으로 지정하거나, 생성된 배열의 데이터 타입을 변환할 수 있습니다. 이는 메모리 효율성, 연산 속도, 그리고 특정 라이브러리(예: 딥러닝 프레임워크)와의 호환성을 위해 중요합니다.
 
@@ -485,9 +493,17 @@ print(f"\n특정 행과 열 동시 선택 (2D 결과):\n{arr_2d[np.array([[0,0],
 
 NumPy는 배열 간의 빠르고 효율적인 연산을 위해 다양한 기능을 제공합니다. 이는 ML/DL에서 행렬 연산을 수행하는 데 필수적입니다.
 
-### 4.1. 벡터화된 연산
+### 4.1. 유니버설 함수 (Universal Functions, ufuncs)와 벡터화
 
-NumPy 배열은 반복문 없이 배열의 모든 요소에 대해 연산을 수행하는 "벡터화된(vectorized)" 연산을 지원합니다. 이는 파이썬의 일반적인 반복문보다 훨씬 빠릅니다.
+NumPy의 핵심 성능 비결 중 하나는 **유니버설 함수(Universal Functions, ufuncs)**입니다. ufunc는 `ndarray` 객체 내의 모든 요소에 대해 빠른 C 레벨의 연산을 수행하는 함수입니다. 사용자가 파이썬 `for` 루프를 작성할 필요 없이, 배열 전체에 대한 연산을 간결하게 표현하는 것을 **벡터화(Vectorization)**라고 하며, 이는 ufuncs를 통해 구현됩니다.
+
+**주요 특징:**
+- **성능**: 내부적으로 C로 구현된 루프를 사용하므로 순수 파이썬 코드보다 월등히 빠릅니다.
+- **다양성**: 산술 연산(`np.add`, `np.multiply`), 삼각 함수(`np.sin`, `np.cos`), 통계 함수(`np.sum`, `np.mean`) 등 다양한 ufuncs가 미리 구현되어 있습니다.
+- **브로드캐스팅 지원**: ufuncs는 브로드캐스팅 규칙을 자동으로 지원하여 형태가 다른 배열 간의 연산을 가능하게 합니다.
+
+**예시:**
+`+`, `*`와 같은 연산자들은 내부적으로 해당 ufunc(`np.add`, `np.multiply`)를 호출합니다.
 
 ```python
 import numpy as np
@@ -495,17 +511,23 @@ import numpy as np
 arr1 = np.array([1, 2, 3])
 arr2 = np.array([4, 5, 6])
 
-# 요소별 덧셈
+# 요소별 덧셈 (내부적으로 np.add ufunc 호출)
 sum_arr = arr1 + arr2
+# 위 코드는 아래와 동일합니다.
+# sum_arr = np.add(arr1, arr2)
 print(f"요소별 덧셈: {sum_arr}") # [5 7 9]
 
-# 요소별 곱셈
+# 요소별 곱셈 (내부적으로 np.multiply ufunc 호출)
 mul_arr = arr1 * arr2
 print(f"요소별 곱셈: {mul_arr}") # [4 10 18]
 
 # 스칼라 연산: 배열의 모든 요소에 스칼라 값 적용
 scalar_mul = arr1 * 10
 print(f"스칼라 곱셈: {scalar_mul}") # [10 20 30]
+
+# 다른 ufunc 예시 (지수 함수)
+exp_arr = np.exp(arr1)
+print(f"지수 함수 적용: {exp_arr}")
 ```
 
 ### 4.2. 브로드캐스팅 (Broadcasting)
@@ -819,7 +841,39 @@ print(f"\n시드 설정 후 난수 A: {rand_a}")
 print(f"시드 설정 후 난수 B: {rand_b}") # rand_a와 동일한 결과
 ```
 
-### 6.2. 푸리에 변환 (Fourier Transform)
+### 6.2. 샘플링 및 순열
+데이터를 무작위로 섞거나 샘플링하는 것은 교차 검증(Cross-validation)이나 부트스트래핑(Bootstrapping) 등 통계적 검증 및 모델 학습 과정에서 매우 중요합니다.
+
+- `np.random.shuffle(x)`: 배열 `x`의 순서를 제자리에서(in-place) 무작위로 섞습니다.
+- `np.random.permutation(x)`: 배열 `x`의 순서를 무작위로 섞은 새로운 배열(복사본)을 반환합니다.
+- `np.random.choice(a, size=None, replace=True, p=None)`: 배열 `a`에서 주어진 `size`만큼 무작위로 샘플을 추출합니다. `replace=True`는 복원 추출(중복 허용)을 의미합니다.
+
+```python
+import numpy as np
+
+arr = np.arange(10)
+print(f"원본 배열: {arr}")
+
+# 순서 섞기 (제자리 변경)
+np.random.shuffle(arr)
+print(f"shuffle 후 배열: {arr}")
+
+# 순서 섞인 복사본 생성
+arr_perm = np.random.permutation(10)
+print(f"permutation 결과: {arr_perm}")
+
+# 샘플 추출
+# 0~4 중에서 5개를 비복원 추출 (중복 없음)
+choice_no_replace = np.random.choice(5, 5, replace=False)
+print(f"비복원 추출: {choice_no_replace}")
+
+# 0~4 중에서 10개를 복원 추출 (중복 허용)
+choice_with_replace = np.random.choice(5, 10, replace=True)
+print(f"복원 추출: {choice_with_replace}")
+```
+
+### 6.3. 푸리에 변환 (Fourier Transform)
+
 
 NumPy의 `fft` 모듈은 푸리에 변환을 수행하는 기능을 제공합니다. 푸리에 변환은 신호 처리, 이미지 처리, 스펙트럼 분석 등 다양한 분야에서 사용됩니다.
 
@@ -1144,6 +1198,13 @@ pass_fail = np.where(scores >= 80, 'Pass', 'Fail')
 print(f"\n점수: {scores}")
 print(f"합격/불합격: {pass_fail}")
 
+# np.where를 이용한 인덱스 반환
+# 조건만 인자로 전달하면, 조건이 True인 요소의 인덱스를 튜플 형태로 반환합니다.
+pass_indices = np.where(scores >= 80)
+print(f"80점 이상인 점수의 인덱스: {pass_indices[0]}")
+# 팬시 인덱싱과 연계하여 활용
+print(f"80점 이상인 점수들: {scores[pass_indices]}")
+
 # 고유한 요소 찾기
 duplicate_arr = np.array([1, 2, 2, 3, 1, 4, 5, 5])
 unique_elements = np.unique(duplicate_arr)
@@ -1198,6 +1259,24 @@ except ValueError as e:
     print("A의 형태 (2, 3)과 F의 형태 (2,)는 브로드캐스팅 규칙에 따라 호환되지 않습니다.")
     print("F는 (1, 2)로 확장되지만, A의 마지막 차원 (3)과 F의 마지막 차원 (2)이 일치하지 않습니다.")
 ```
+
+#### 8.2.1. 브로드캐스팅의 한계 및 주의점
+
+브로드캐스팅은 매우 편리하지만, 메모리 사용량에 주의해야 합니다. 브로드캐스팅은 실제로 데이터를 복사하여 배열을 확장하는 것이 아니라, **메모리를 효율적으로 사용하기 위해 가상으로 배열을 확장**하여 연산을 수행합니다. 하지만 연산의 결과물은 **확장된 크기의 새로운 배열**이 되어 메모리에 할당됩니다.
+
+- **메모리 급증**: 매우 큰 두 배열을 브로드캐스팅하면, 결과 배열의 크기가 예상을 초과하여 메모리 부족(Out of Memory) 오류를 일으킬 수 있습니다.
+  ```python
+  # 예시: 메모리 문제를 일으킬 수 있는 경우
+  large_arr1 = np.random.rand(10000, 1)
+  large_arr2 = np.random.rand(1, 10000)
+  
+  # 브로드캐스팅 결과는 (10000, 10000) 크기의 배열이 됨
+  # result = large_arr1 + large_arr2 # 약 800MB의 메모리 필요
+  ```
+- **의도치 않은 연산**: 브로드캐스팅 규칙을 잘못 이해하면, 의도치 않은 형태의 결과가 나올 수 있으므로 항상 연산 후 결과 배열의 `shape`을 확인하는 습관이 중요합니다.
+
+**대안**: 메모리가 우려되는 매우 큰 배열의 경우, `for` 루프를 사용하여 명시적으로 연산을 수행하거나, 데이터를 작은 청크(chunk)로 나누어 처리하는 방법을 고려할 수 있습니다. 이는 속도는 느려지지만 메모리 사용량을 제어할 수 있는 장점이 있습니다.
+
 
 ### 8.3. 마스킹 (Masking)
 
@@ -1398,6 +1477,41 @@ NumPy는 기본적으로 매우 효율적이지만, 대규모 데이터셋이나
 
     print(f"np.dot 결과와 einsum 결과가 동일한가? {np.allclose(C_dot, C_einsum)}")
     
+#### 8.6.1. `np.vectorize`의 사용과 주의점
+
+때로는 NumPy의 ufunc로 구현되지 않은 복잡한 순수 파이썬 함수를 배열의 모든 요소에 적용하고 싶을 때가 있습니다. 이때 `np.vectorize`를 사용하면 함수를 벡터화된 것처럼 보이게 만들 수 있습니다.
+
+**사용법:**
+```python
+import numpy as np
+
+# 파이썬 함수 정의
+def my_func(x):
+    if x > 5:
+        return x * 2
+    else:
+        return x / 2
+
+# 함수를 벡터화
+vectorized_func = np.vectorize(my_func)
+
+arr = np.array([1, 6, 3, 8])
+result = vectorized_func(arr)
+
+print(f"원본 배열: {arr}")
+print(f"vectorize 적용 결과: {result}")
+```
+
+**주의점:**
+`np.vectorize`는 **편의성을 위한 기능일 뿐, 성능 향상을 위한 도구가 아닙니다.** 내부적으로는 파이썬 `for` 루프를 실행하므로, NumPy의 진정한 ufunc보다 훨씬 느립니다. 따라서 성능이 중요한 코드에서는 `np.vectorize`의 사용을 피하고, 가능한 한 NumPy의 내장 함수와 불리언 인덱싱 등을 조합하여 로직을 구현하는 것이 좋습니다.
+
+```python
+# 위 예시를 불리언 인덱싱으로 구현 (훨씬 빠름)
+arr = np.array([1, 6, 3, 8])
+result_fast = np.where(arr > 5, arr * 2, arr / 2)
+print(f"where를 이용한 결과: {result_fast}")
+```
+    
 
 ### 8.7. NumPy와 다른 라이브러리 연동
 
@@ -1594,3 +1708,77 @@ NumPy는 머신러닝 및 딥러닝 알고리즘의 구현과 데이터 처리 �
     print(f"정규화된 데이터의 표준편차: {np.std(normalized_data):.4f}")
     ```
 
+### 8.9. 다항식 피팅 (Polynomial Fitting)
+NumPy는 주어진 데이터 포인트를 가장 잘 근사하는 다항식의 계수를 찾는 기능을 제공합니다. 이는 데이터의 추세를 모델링하거나, 비선형 관계를 가지는 특성을 생성(Polynomial Features)하는 데 사용될 수 있습니다.
+
+- `np.polyfit(x, y, deg)`: `x`, `y` 데이터에 대해 `deg` 차수의 다항식을 피팅하여 계수를 반환합니다.
+- `np.poly1d(c_or_r)`: 다항식의 계수나 근(root)을 사용하여 다항식 객체를 생성합니다. 이 객체는 함수처럼 호출하여 값을 계산할 수 있습니다.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 데이터 생성 (2차 함수 + 노이즈)
+x = np.linspace(-5, 5, 100)
+y = 0.5 * x**2 - 2 * x + 1 + np.random.randn(100) * 2
+
+# 2차 다항식으로 피팅
+coeffs = np.polyfit(x, y, 2)
+print(f"피팅된 다항식의 계수 (2차, 1차, 상수): {coeffs}")
+
+# 다항식 객체 생성
+poly_func = np.poly1d(coeffs)
+
+# 피팅된 다항식 곡선 생성
+y_fit = poly_func(x)
+
+# 시각화 (Matplotlib 필요)
+# plt.figure(figsize=(8, 6))
+# plt.scatter(x, y, label='Original Data', alpha=0.5)
+# plt.plot(x, y_fit, color='red', linewidth=2, label='Polynomial Fit')
+# plt.title('Polynomial Fitting')
+# plt.xlabel('X')
+# plt.ylabel('Y')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+```
+
+### 8.10. 결측치(NaN) 처리
+
+실제 데이터에는 종종 결측치(Missing Values)가 포함되어 있으며, NumPy에서는 이를 `np.nan` (Not a Number)으로 표현합니다. `np.nan`이 포함된 배열에 일반적인 집계 함수(`np.sum`, `np.mean` 등)를 적용하면 결과 역시 `nan`이 반환되므로, 결측치를 안전하게 처리하는 전용 함수를 사용해야 합니다.
+
+- `np.isnan(arr)`: 배열의 각 요소가 `nan`인지 여부를 확인하여 불리언 배열을 반환합니다.
+- `np.nansum(arr)`: `nan`을 0으로 취급하고 합계를 계산합니다.
+- `np.nanmean(arr)`: `nan`을 무시하고 평균을 계산합니다.
+- `np.nanmax(arr)`, `np.nanmin(arr)`: `nan`을 무시하고 최댓값/최솟값을 찾습니다.
+- `np.nanstd(arr)`, `np.nanvar(arr)`: `nan`을 무시하고 표준편차/분산을 계산합니다.
+
+```python
+import numpy as np
+
+# 결측치가 포함된 배열 생성
+arr_with_nan = np.array([1, 2, np.nan, 4, 5])
+print(f"결측치가 포함된 배열: {arr_with_nan}")
+
+# 일반적인 합계와 평균 (결과가 nan이 됨)
+print(f"일반 합계 (np.sum): {np.sum(arr_with_nan)}")
+print(f"일반 평균 (np.mean): {np.mean(arr_with_nan)}")
+
+# 결측치 안전 함수 사용
+print(f"\n결측치 무시 합계 (np.nansum): {np.nansum(arr_with_nan)}")
+print(f"결측치 무시 평균 (np.nanmean): {np.nanmean(arr_with_nan)}")
+
+# 결측치 위치 찾기 및 대체하기
+nan_indices = np.isnan(arr_with_nan)
+print(f"\nNaN 위치 마스크: {nan_indices}")
+
+# 결측치를 0으로 대체
+arr_filled_zero = np.where(nan_indices, 0, arr_with_nan)
+print(f"결측치를 0으로 대체: {arr_filled_zero}")
+
+# 결측치를 평균값으로 대체
+mean_val = np.nanmean(arr_with_nan)
+arr_filled_mean = np.where(nan_indices, mean_val, arr_with_nan)
+print(f"결측치를 평균값({mean_val:.2f})으로 대체: {arr_filled_mean}")
+```

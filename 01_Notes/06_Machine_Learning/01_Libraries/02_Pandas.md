@@ -849,8 +849,38 @@ Pandas는 머신러닝 프로젝트의 거의 모든 단계에서 핵심적인 �
 
 Pandas는 Matplotlib, Seaborn과 같은 파이썬 시각화 라이브러리와 긴밀하게 연동됩니다. DataFrame의 데이터를 직접 시각화 함수에 전달하여 데이터의 분포, 관계, 패턴 등을 그래프로 표현할 수 있습니다. 이는 탐색적 데이터 분석(EDA) 단계에서 데이터에 대한 깊은 통찰력을 얻는 데 필수적입니다.
 
-*   **Matplotlib**: `df.plot()` 메서드를 통해 기본적인 플롯(선, 막대, 히스토그램 등)을 그릴 수 있습니다.
+*   **Matplotlib**: `df.plot()` 메서드를 통해 기본적인 플롯(선, 막대, 히스토그램 등)을 쉽고 빠르게 그릴 수 있습니다.
 *   **Seaborn**: 통계적 시각화에 특화된 라이브러리로, Pandas DataFrame을 입력으로 받아 더욱 풍부하고 미려한 그래프를 생성합니다.
+
+**시각화 예제:**
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Iris 데이터셋 로드
+df_iris = pd.read_csv("./data/iris.csv")
+
+# 1. Pandas 내장 plot() 사용 (히스토그램)
+df_iris['sepal.length'].plot(kind='hist', title='Sepal Length Histogram')
+plt.xlabel("Sepal Length")
+plt.show()
+
+# 2. Pandas 내장 plot() 사용 (산점도)
+df_iris.plot(kind='scatter', x='sepal.length', y='sepal.width', 
+             title='Sepal Length vs Width')
+plt.show()
+
+# 3. Seaborn을 이용한 Box Plot
+plt.figure(figsize=(8, 6))
+sns.boxplot(data=df_iris, x='variety', y='petal.length')
+plt.title('Petal Length by Variety')
+plt.show()
+
+# 4. Seaborn을 이용한 Pair Plot (변수 간 모든 관계 시각화)
+sns.pairplot(df_iris, hue='variety')
+plt.show()
+```
 
 ## 7. DataFrame 심화
 
@@ -1628,15 +1658,26 @@ print(f"Pandas 벡터화 시간: {end_time - start_time:.4f} 초")
 ```
 
 #### 2. `apply()` 대신 벡터화된 함수 사용
-`apply()`는 행/열 단위로 파이썬 함수를 적용하므로 느릴 수 있습니다. 가능한 경우 NumPy나 Pandas의 벡터화된 함수를 사용합니다.
+`apply()`는 행/열 단위로 파이썬 함수를 적용하므로 유연하지만, 내부적으로 반복문을 사용하기 때문에 대규모 데이터에서는 매우 느릴 수 있습니다. 가능한 경우, 동일한 로직을 NumPy나 Pandas의 내장 벡터화 함수로 구현하는 것이 훨씬 효율적입니다.
 
+**`apply`를 벡터화된 연산으로 대체하는 예시:**
 ```python
-# 비효율적인 apply()
+# 비효율적인 apply() 사용 예시
 # df_perf['C'] = df_perf.apply(lambda row: row['A'] * 2 + row['B'] * 3, axis=1)
 
-# 효율적인 벡터화된 연산
+# 효율적인 벡터화된 연산 (훨씬 빠름)
 df_perf['C'] = df_perf['A'] * 2 + df_perf['B'] * 3
+
+# 복잡한 조건부 로직도 np.where나 마스킹으로 대체 가능
+# apply 예시: A가 0.5보다 크면 A*2, 아니면 B*3
+# df_perf['D'] = df_perf.apply(lambda row: row['A'] * 2 if row['A'] > 0.5 else row['B'] * 3, axis=1)
+
+# np.where를 사용한 벡터화된 구현
+df_perf['D'] = np.where(df_perf['A'] > 0.5, df_perf['A'] * 2, df_perf['B'] * 3)
 ```
+
+**불가피하게 `apply`를 사용해야 한다면?**
+- 만약 로직이 복잡하여 벡터화가 정말 어렵다면, `apply`는 최후의 수단으로 사용될 수 있습니다. 하지만 그 성능 저하를 인지하고 있어야 하며, 더 나은 대안이 있는지 항상 고민하는 것이 좋습니다. 대안으로는 Cython, Numba와 같은 라이브러리를 사용하여 파이썬 함수의 실행 속도 자체를 높이는 방법도 있습니다.
 
 #### 3. 적절한 데이터 타입 (dtype) 사용
 메모리 사용량을 줄이고 연산 속도를 높입니다. 예를 들어, 작은 정수 범위의 컬럼에는 `int8`, `int16` 등을 사용합니다.
@@ -1662,6 +1703,144 @@ df_perf['A'] = df_perf['A'].astype('float32')  # 메모리 절약
 
 ```python
 # df['Product'] = df['Product'].astype('category')
+```
+
+### 16.7. 결측치(NaN) 처리 심화
+
+실제 데이터에서 결측치(`NaN`)를 다루는 것은 데이터 전처리에서 가장 중요한 단계 중 하나입니다. Pandas는 결측치를 탐지하고, 제거하고, 다른 값으로 대체하는 다양한 방법을 제공합니다.
+
+**1. 결측치 탐지**
+- `isnull()` 또는 `isna()`: 각 요소가 결측치인지 여부를 불리언 DataFrame으로 반환합니다.
+- `notnull()` 또는 `notna()`: `isnull()`의 반대입니다.
+- `isnull().sum()`: 컬럼별 결측치의 총 개수를 확인하는 데 가장 일반적으로 사용됩니다.
+
+**2. 결측치 제거**
+- `dropna(axis=0, how='any')`: 결측치가 하나라도 있는 행(`axis=0`)을 제거합니다. `how='all'`은 모든 값이 결측치인 행만 제거합니다.
+
+**3. 결측치 채우기 (Imputation)**
+- `fillna(value)`: 결측치를 특정 스칼라 값이나 딕셔너리 형태로 각 컬럼별 다른 값으로 채웁니다.
+- `fillna(method='ffill')`: Forward fill. 바로 앞의 유효한 값으로 결측치를 채웁니다. 시계열 데이터에 유용합니다.
+- `fillna(method='bfill')`: Backward fill. 바로 뒤의 유효한 값으로 결측치를 채웁니다.
+- `interpolate()`: 결측치를 선형 보간법 등 다양한 보간 방법에 따라 채웁니다. 데이터가 일정한 트렌드를 가질 때 유용합니다.
+
+```python
+import pandas as pd
+import numpy as np
+
+df_nan = pd.DataFrame({
+    'A': [1, 2, np.nan, 4, 5],
+    'B': [np.nan, 10, 20, np.nan, 30],
+    'C': [100, 200, 300, 400, 500]
+})
+
+print("원본 DataFrame:\n", df_nan)
+
+# 결측치 탐지
+print("\n컬럼별 결측치 개수:\n", df_nan.isnull().sum())
+
+# 결측치 제거
+print("\n결측치 있는 행 제거:\n", df_nan.dropna())
+
+# 결측치 채우기
+print("\n결측치를 0으로 채우기:\n", df_nan.fillna(0))
+
+# 컬럼별 다른 값으로 채우기
+fill_values = {'A': df_nan['A'].mean(), 'B': 99}
+print("\n컬럼별 다른 값으로 채우기:\n", df_nan.fillna(value=fill_values))
+
+# Forward Fill (ffill)
+df_ffill = pd.DataFrame({'Data': [10, np.nan, np.nan, 20, np.nan, 30]})
+print("\nForward Fill (ffill) 예시:")
+print("원본:", df_ffill.T)
+print("ffill 적용 후:", df_ffill.fillna(method='ffill').T)
+
+# 보간법 (Interpolation)
+df_inter = pd.DataFrame({'Data': [10, np.nan, np.nan, 40]})
+print("\n보간법 (interpolate) 예시:")
+print("원본:", df_inter.T)
+print("interpolate 적용 후:", df_inter.interpolate().T)
+```
+
+### 16.8. MultiIndex (계층적 인덱싱) 활용
+
+MultiIndex(또는 계층적 인덱싱)는 DataFrame의 인덱스를 여러 레벨로 구성하여 고차원 데이터를 2차원 형식으로 표현할 수 있게 해주는 강력한 기능입니다. `groupby()`나 `pivot_table()`의 결과로 자연스럽게 생성되며, 데이터를 더 세분화하여 분석하고 조작하는 데 사용됩니다.
+
+**주요 기능:**
+- `set_index()`: 하나 이상의 컬럼을 인덱스로 설정하여 MultiIndex를 생성합니다.
+- `reset_index()`: 인덱스의 일부 또는 전체를 컬럼으로 되돌립니다.
+- `stack()`: 컬럼 레벨을 인덱스 레벨로 변환합니다 (데이터를 '긴' 형식으로 만듦).
+- `unstack()`: 인덱스 레벨을 컬럼 레벨로 변환합니다 (데이터를 '넓은' 형식으로 만듦).
+
+```python
+import pandas as pd
+
+# 예시 데이터
+data = {
+    'Region': ['East', 'East', 'West', 'West'],
+    'Product': ['A', 'B', 'A', 'B'],
+    '2022_Sales': [100, 150, 200, 250],
+    '2023_Sales': [110, 140, 220, 240]
+}
+df_multi = pd.DataFrame(data)
+
+# Region과 Product를 인덱스로 설정하여 MultiIndex 생성
+df_multi = df_multi.set_index(['Region', 'Product'])
+print("MultiIndex DataFrame:\n", df_multi)
+
+# MultiIndex를 이용한 데이터 접근
+print("\nEast 지역의 A 제품 데이터:\n", df_multi.loc[('East', 'A')])
+
+# stack(): 컬럼을 인덱스로 변환
+df_stacked = df_multi.stack()
+print("\nStacked DataFrame (긴 형식):\n", df_stacked)
+
+# unstack(): 인덱스를 컬럼으로 변환
+# df_stacked.unstack()을 하면 원래의 df_multi와 유사한 형태로 돌아감
+print("\nUnstacked DataFrame (넓은 형식):\n", df_stacked.unstack())
+
+# reset_index(): 인덱스를 컬럼으로 되돌리기
+print("\n인덱스를 컬럼으로 되돌리기:\n", df_multi.reset_index())
+```
+
+### 16.9. 메서드 체이닝 (Method Chaining)
+
+메서드 체이닝은 여러 데이터 처리 단계를 하나의 연속된 라인으로 연결하여 코드의 가독성과 흐름을 개선하는 코딩 스타일입니다. 각 메서드가 DataFrame을 반환하기 때문에, 그 결과에 다시 점(`.`)을 찍어 다음 메서드를 호출하는 방식입니다. 중간 과정에서 불필로한 변수 생성을 피할 수 있어 코드가 깔끔해집니다.
+
+**메서드 체이닝의 장점:**
+- **가독성 향상**: 데이터의 흐름이 위에서 아래로 자연스럽게 이어져 코드를 읽기 편합니다.
+- **코드 간결성**: 중간 변수 선언 없이 여러 단계를 한 번에 표현할 수 있습니다.
+- **디버깅 용이**: 각 단계를 주석 처리하며 중간 결과를 쉽게 확인할 수 있습니다.
+
+**가독성을 위해 각 메서드 호출을 괄호`()`로 감싸고 줄바꿈을 하는 것이 일반적입니다.**
+
+```python
+import pandas as pd
+
+# 예시 데이터
+df_chain = pd.DataFrame({
+    'category': ['A', 'B', 'A', 'B', 'A', 'C'],
+    'value1': [10, 20, 30, 40, 50, 60],
+    'value2': [5, 15, 25, 35, 45, 55]
+})
+
+# 메서드 체이닝을 사용하지 않은 경우
+temp_df1 = df_chain[df_chain['category'] != 'C']
+temp_df2 = temp_df1.copy() # SettingWithCopyWarning 방지
+temp_df2['total'] = temp_df2['value1'] + temp_df2['value2']
+final_df = temp_df2.groupby('category')['total'].mean().reset_index()
+print("체이닝 미사용 결과:\n", final_df)
+
+# 메서드 체이닝을 사용한 경우
+final_df_chained = (
+    df_chain
+    .query("category != 'C'")  # 조건부 필터링
+    .assign(total = lambda df: df.value1 + df.value2) # 새로운 컬럼 추가
+    .groupby('category')['total']
+    .mean()
+    .reset_index()
+)
+
+print("\n메서드 체이닝 사용 결과:\n", final_df_chained)
 ```
 
 ---
