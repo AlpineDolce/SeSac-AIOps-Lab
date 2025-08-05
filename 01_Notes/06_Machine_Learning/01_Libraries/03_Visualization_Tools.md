@@ -26,6 +26,7 @@
     - [2.4.1. 제목, 축 레이블, 범례](#241-제목-축-레이블-범례)
     - [2.4.2. 색상, 마커, 선 스타일](#242-색상-마커-선-스타일)
     - [2.4.3. 축 범위 및 눈금 설정](#243-축-범위-및-눈금-설정)
+    - [2.4.4. 고급 커스터마이징 (Advanced Customization)](#244-고급-커스터마이징-advanced-customization)
   - [2.5. 서브플롯 (Subplots)](#25-서브플롯-subplots)
   - [2.6. 플롯 저장](#26-플롯-저장)
   - [2.7. 객체 지향 API (Object-Oriented API)](#27-객체-지향-api-object-oriented-api)
@@ -73,7 +74,8 @@
   - [4.4. 인터랙티브 플롯](#44-인터랙티브-플롯)
   - [4.5. 서브플롯](#45-서브플롯)
   - [4.6. 플롯 저장](#46-플롯-저장)
-  - [4.7. Dash와의 통합](#47-dash와의-통합)
+  - [4.7. 인터랙티브 대시보드 구축: Dash와 Streamlit](#47-인터랙티브-대시보드-구축-dash와-streamlit)
+  - [4.8. Plotly Graph Objects 심화](#48-plotly-graph-objects-심화)
 - [5. 라이브러리 비교 및 사용 가이드](#5-라이브러리-비교-및-사용-가이드)
   - [5.1. Matplotlib vs. Seaborn vs. Plotly](#51-matplotlib-vs-seaborn-vs-plotly)
   - [5.2. 최적의 라이브러리 선택 가이드](#52-최적의-라이브러리-선택-가이드)
@@ -437,6 +439,10 @@ plt.yticks([-1, 0, 1])
 plt.grid(True)
 plt.show()
 ```
+
+#### 2.4.4. 고급 커스터마이징 (Advanced Customization)
+
+논문이나 공식 보고서에 사용될 출판용(publication-quality) 그래프를 만들기 위해서는 세밀한 제어가 필요합니다. `plt.style.use('seaborn-paper')`와 같은 스타일 시트를 사용하거나, `plt.rcParams` 딕셔너리를 직접 수정하여 전역 폰트, 글자 크기, 해상도(DPI) 등을 설정할 수 있습니다. 또한, 플롯을 구성하는 개별 Artist 객체(예: `Line2D`, `Patch`, `Text`)에 직접 접근하여 속성을 변경하는 방법을 다루면 좋습니다.
 
 ### 2.5. 서브플롯 (Subplots)
 여러 개의 플롯을 하나의 그림(Figure) 안에 배치하여 데이터를 다양한 관점에서 비교하거나 관련성 있는 정보를 함께 보여줄 때 사용합니다. `plt.subplot()` 또는 객체 지향 방식의 `plt.subplots()`를 사용합니다.
@@ -959,6 +965,10 @@ plt.suptitle("Using Matplotlib and Seaborn Together") # 전체 그림 제목
 plt.show()
 ```
 
+**통계적 유의성 주석(Annotation) 추가**
+
+Seaborn으로 그린 Box plot이나 Bar plot에서 두 그룹 간의 차이가 통계적으로 유의미한지 여부를 시각적으로 보여주는 것은 분석의 신뢰도를 높입니다. `statannot`과 같은 보조 라이브러리를 사용하면, 두 그룹 사이에 p-value나 유의수준을 나타내는 별표(`*`, `**`, `***`)를 쉽게 추가할 수 있습니다.
+
 ## 4. Plotly
 
 ### 4.1. Plotly 소개
@@ -1103,6 +1113,11 @@ fig = px.scatter_mapbox(carshare, lat="centroid_lat", lon="centroid_lon", color=
 fig.show()
 ```
 
+`px.scatter_mapbox` 예제는 좋지만, 본격적인 지리 정보 분석 및 시각화를 위해서는 관련 생태계를 함께 언급하는 것이 좋습니다. **GeoPandas**는 Pandas DataFrame과 유사한 GeoDataFrame 객체로 공간 데이터를 다루는 핵심 라이브러리이며, **Folium**은 leaflet.js 기반의 인터랙티브 지도를 만드는 데 특화되어 있습니다. (예: 지도 위에 Choropleth map, 마커 클러스터링 등 구현)
+
+**실무적 중요성**
+부동산, 물류, 환경 데이터 등 위치 정보를 다루는 분석에서는 GeoPandas와 Folium이 거의 표준처럼 사용됩니다.
+
 ### 4.4. 인터랙티브 플롯
 Plotly의 가장 큰 장점은 생성된 그래프가 기본적으로 인터랙티브하다는 점입니다. 마우스로 그래프를 조작하여 데이터를 더 깊이 탐색할 수 있습니다.
 
@@ -1167,7 +1182,7 @@ except ValueError:
     print("Kaleido 라이브러리가 설치되어 있지 않아 PDF 이미지 저장을 건너뜁니다. 'pip install kaleido'를 실행하세요.")
 ```
 
-### 4.7. Dash와의 통합
+### 4.7. 인터랙티브 대시보드 구축: Dash와 Streamlit
 Dash는 Plotly를 기반으로 하는 파이썬 웹 애플리케이션 프레임워크입니다. Dash를 사용하면 복잡한 웹 개발 지식 없이도 인터랙티브한 대시보드와 데이터 시각화 애플리케이션을 구축할 수 있습니다. Plotly 그래프는 Dash 앱에 쉽게 통합될 수 있으며, 사용자 입력에 따라 동적으로 업데이트되는 대시보드를 만들 수 있습니다.
 
 **간단한 Dash 앱 예시 (설치 및 실행 필요)**:
@@ -1218,6 +1233,12 @@ Dash는 Plotly를 기반으로 하는 파이썬 웹 애플리케이션 프레임
 # if __name__ == '__main__':
 #     app.run_server(debug=True)
 ```
+
+Dash가 잘 소개되었지만, 실무에서는 목적에 따라 다른 대시보드 도구도 활발히 사용됩니다. 특히 **Streamlit**은 매우 적은 코드로 데이터 분석 스크립트를 인터랙티브 웹 앱으로 빠르게 변환할 수 있어 프로토타이핑에 압도적인 인기를 얻고 있습니다. Dash와 Streamlit의 장단점(Dash: 복잡하고 맞춤화된 기업용 앱에 적합, Streamlit: 빠르고 간단한 데이터 앱에 적합)을 비교 설명하면 사용자가 상황에 맞는 도구를 선택하는 데 도움이 됩니다.
+
+### 4.8. Plotly Graph Objects 심화
+
+Plotly Express(`px`)는 빠르고 편리하지만, 복잡한 인터랙티브 플롯을 만드는 데는 한계가 있습니다. 저수준 API인 Plotly Graph Objects(`go`)는 `go.Figure` 객체를 생성하고, `go.Scatter`, `go.Bar`와 같은 'Trace' 객체를 추가하며, `fig.update_layout()`으로 레이아웃을 세밀하게 제어하는 방식을 사용합니다. 이를 통해 여러 종류의 그래프를 하나의 Figure에 결합하거나, 버튼, 슬라이더와 같은 커스텀 컨트롤을 추가하는 등 완전히 사용자 정의된 인터랙티브 시각화를 구현할 수 있습니다.
 
 ## 5. 라이브러리 비교 및 사용 가이드
 

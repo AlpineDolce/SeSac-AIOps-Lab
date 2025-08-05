@@ -20,6 +20,7 @@
   - [2.5. 불균형 데이터 처리 (Handling Imbalanced Data)](#25-불균형-데이터-처리-handling-imbalanced-data)
 - [3. 지도 학습 (Supervised Learning)](#3-지도-학습-supervised-learning)
   - [3.1. 분류 (Classification)](#31-분류-classification)
+  - [4.3. 고급 부스팅 알고리즘: XGBoost와 LightGBM](#43-고급-부스팅-알고리즘-xgboost와-lightgbm)
   - [3.2. 회귀 (Regression)](#32-회귀-regression)
 - [4. 비지도 학습 (Unsupervised Learning)](#4-비지도-학습-unsupervised-learning)
   - [4.4.1. 클러스터링 (Clustering)](#441-클러스터링-clustering)
@@ -27,14 +28,19 @@
 - [5. 모델 선택 및 평가 (Model Selection \& Evaluation)](#5-모델-선택-및-평가-model-selection--evaluation)
   - [5.1. 데이터 분할 (Data Splitting)](#51-데이터-분할-data-splitting)
   - [5.2. 교차 검증 (Cross-Validation)](#52-교차-검증-cross-validation)
+  - [5.2.3 특수 데이터셋을 위한 교차 검증](#523-특수-데이터셋을-위한-교차-검증)
   - [5.3. 하이퍼파라미터 튜닝 (Hyperparameter Tuning)](#53-하이퍼파라미터-튜닝-hyperparameter-tuning)
+    - [5.3.3. 자동화된 하이퍼파라미터 튜닝 및 모델 선택 (AutoML)](#533-자동화된-하이퍼파라미터-튜닝-및-모델-선택-automl)
   - [5.4. 성능 평가 지표 (Evaluation Metrics)](#54-성능-평가-지표-evaluation-metrics)
+  - [5.5. 모델 해석 (Model Interpretation)](#55-모델-해석-model-interpretation)
+    - [상세 설명](#상세-설명)
 - [6. 파이프라인 (Pipeline)](#6-파이프라인-pipeline)
   - [6.1. 파이프라인의 개념 및 장점](#61-파이프라인의-개념-및-장점)
   - [6.2. `Pipeline` 사용 예시](#62-pipeline-사용-예시)
   - [6.3. ColumnTransformer: 혼합 데이터 타입 전처리](#63-columntransformer-혼합-데이터-타입-전처리)
 - [7. 모델 영속성 (Model Persistence)](#7-모델-영속성-model-persistence)
   - [7.1. 모델 저장 및 로드](#71-모델-저장-및-로드)
+  - [7.2. 모델 배포 및 운영 고려사항](#72-모델-배포-및-운영-고려사항)
 - [8. Scikit-learn과 다른 라이브러리 연동](#8-scikit-learn과-다른-라이브러리-연동)
   - [8.1. Pandas와의 연동](#81-pandas와의-연동)
   - [8.2. NumPy와의 연동](#82-numpy와의-연동)
@@ -695,6 +701,10 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"그레디언트 부스팅 정확도: {accuracy:.4f}")
 ```
 
+### 4.3. 고급 부스팅 알고리즘: XGBoost와 LightGBM
+
+Scikit-learn의 `GradientBoostingClassifier`는 훌륭하지만, 실무에서는 성능과 속도가 대폭 개선된 `XGBoost`, `LightGBM`, `CatBoost` 라이브러리가 훨씬 더 널리 쓰입니다. 이들은 Scikit-learn과 완벽하게 호환되는 API(Scikit-learn Wrapper)를 제공하여 `Pipeline`이나 `GridSearchCV`에 쉽게 통합할 수 있습니다. 특히 대용량 데이터 처리 속도와 예측 성능 면에서 큰 강점을 가집니다.
+
 ### 3.2. 회귀 (Regression)
 회귀는 입력 특성을 기반으로 연속적인 숫자 값을 예측하는 문제입니다. 예를 들어, 주택 가격 예측, 주식 가격 예측, 연비 예측 등이 회귀 문제에 해당합니다.
 
@@ -1094,6 +1104,12 @@ print(f"\n평균 정확도: {np.mean(accuracy_scores):.4f}")
 print(f"정확도 표준편차: {np.std(accuracy_scores):.4f}")
 ```
 
+### 5.2.3 특수 데이터셋을 위한 교차 검증
+
+`KFold`와 `StratifiedKFold` 외에, 특정 데이터 유형에 맞는 교차 검증 전략이 필요합니다.
+- **`TimeSeriesSplit`**: 시계열 데이터에서는 미래의 데이터로 과거를 예측하는 데이터 누수(leakage)가 발생하면 안 됩니다. `TimeSeriesSplit`은 훈련 세트가 항상 테스트 세트보다 시간적으로 앞서도록 데이터를 분할하여 이를 방지합니다.
+- **`GroupKFold`**: 데이터에 그룹 정보가 있을 때(예: 동일한 환자로부터 측정된 여러 데이터 샘플), 특정 그룹의 데이터가 훈련 세트와 테스트 세트에 동시에 포함되지 않도록 보장합니다.
+
 ### 5.3. 하이퍼파라미터 튜닝 (Hyperparameter Tuning)
 하이퍼파라미터는 모델 학습 전에 사용자가 직접 설정하는 값으로, 모델의 성능에 큰 영향을 미칩니다. 최적의 하이퍼파라미터 조합을 찾는 과정을 하이퍼파라미터 튜닝이라고 합니다. Scikit-learn은 `GridSearchCV`와 `RandomizedSearchCV`를 통해 체계적인 튜닝 방법을 제공합니다.
 
@@ -1173,6 +1189,13 @@ print(f"최고 교차 검증 정확도: {random_search.best_score_:.4f}")
 best_model = random_search.best_estimator_
 print(f"최적의 모델: {best_model}")
 ```
+
+#### 5.3.3. 자동화된 하이퍼파라미터 튜닝 및 모델 선택 (AutoML)
+
+최근 머신러닝 트렌드는 반복적인 작업을 자동화하는 것입니다. **AutoML**은 데이터 전처리, 모델 선택, 하이퍼파라미터 튜닝까지의 전 과정을 자동화하는 기술을 의미합니다. Scikit-learn 생태계의 **TPOT** (유전 프로그래밍 기반)이나 **Auto-Sklearn** 같은 라이브러리를 간략히 소개하면, 사용자가 최신 기술 트렌드에 대한 시야를 넓히는 데 도움이 됩니다.
+
+**실무적 중요성**
+AutoML은 베이스라인 모델을 빠르게 설정하거나, 사람이 미처 생각하지 못한 특성 공학 및 모델 조합을 탐색하는 데 유용하게 사용됩니다.
 
 ### 5.4. 성능 평가 지표 (Evaluation Metrics)
 모델의 성능을 객관적으로 측정하기 위해 다양한 평가 지표가 사용됩니다. 문제 유형(분류, 회귀)에 따라 적절한 지표를 선택하는 것이 중요합니다. Scikit-learn의 `sklearn.metrics` 모듈은 이러한 지표들을 제공합니다.
@@ -1296,6 +1319,10 @@ print(f"AUC: {roc_auc:.4f}")
 # plt.show()
 ```
 
+**모델 보정 (Model Calibration)**
+
+분류 모델의 `predict_proba()`가 반환하는 예측 확률이 실제 확률 분포를 잘 반영하지 않을 수 있습니다. 예를 들어, 모델이 0.8의 확률을 예측했을 때, 실제로 그 예측들이 80%의 정확도를 갖는지 보장되지 않습니다. 모델 보정은 이 예측 확률을 실제 확률에 가깝게 조정하는 과정입니다. Scikit-learn의 `CalibratedClassifierCV`를 사용하면 모델을 학습시킨 후 보정 단계를 추가할 수 있습니다. 이는 예측 확률 자체가 중요한 비즈니스 의사결정(예: 대출 승인 확률, 구매 전환율 예측)에 사용될 때 매우 중요합니다.
+
 <h5>혼동 행렬 (Confusion Matrix)</h5>
 혼동 행렬은 분류 모델의 예측 결과를 표 형태로 요약한 것입니다. 실제 클래스와 예측 클래스 간의 관계를 보여주며, TP, TN, FP, FN 값을 직접 확인할 수 있어 모델의 어떤 유형의 오류를 범하는지 파악하는 데 유용합니다.
 
@@ -1397,6 +1424,15 @@ y_pred = model.predict(X_test)
 r2 = r2_score(y_test, y_pred)
 print(f"R-제곱: {r2:.2f}")
 ```
+
+### 5.5. 모델 해석 (Model Interpretation)
+
+#### 상세 설명
+**(가장 중요)** 실무에서는 모델의 예측 성능만큼 "왜 모델이 그렇게 예측했는가?"를 설명하는 것이 매우 중요합니다. 이는 모델의 신뢰도를 확보하고, 비즈니스 의사결정에 활용하기 위해 필수적입니다.
+- **SHAP (SHapley Additive exPlanations)**: 게임 이론에 기반하여 특정 예측에 각 특성이 얼마나 긍정적/부정적 기여를 했는지 수치화하여 보여주는 강력한 라이브러리.
+- **LIME (Local Interpretable Model-agnostic Explanations)**: 복잡한 블랙박스 모델의 특정 예측 주변을 간단한 선형 모델로 근사하여, 해당 예측에 대한 지역적(local)인 해석을 제공합니다.
+- **Permutation Importance**: 모델 학습 후, 특정 특성의 값을 무작위로 섞었을 때 모델 성능이 얼마나 감소하는지를 측정하여 해당 특성의 중요도를 계산합니다. 모델에 구애받지 않는(model-agnostic) 기법입니다.
+- **Partial Dependence Plots (PDP)**: Scikit-learn의 `sklearn.inspection.plot_partial_dependence` 기능으로, 다른 특성들의 영향을 평균화했을 때 특정 특성 하나가 모델의 예측에 미치는 영향을 시각화합니다.
 
 ## 6. 파이프라인 (Pipeline)
 
@@ -1602,7 +1638,15 @@ new_data = [[5.1, 3.5, 1.4, 0.2]]
 prediction = loaded_model.predict(new_data)
 print(f"로드된 모델로 예측: {iris.target_names[prediction][0]}")
 ```
+### 7.2. 모델 배포 및 운영 고려사항
 
+**실무의 마지막 단계이자 가장 중요한 부분입니다.** 학습된 모델(`*.joblib` 파일)을 어떻게 실제 서비스에 적용하는지에 대한 개념적 설명이 필요합니다.
+- **모델 서빙**: 학습된 모델을 **Flask**나 **FastAPI** 같은 웹 프레임워크로 감싸 REST API를 만드는 방법.
+- **모델 직렬화 표준**: 특정 라이브러리나 언어에 종속되지 않고 모델을 교환하기 위한 표준 포맷인 **ONNX (Open Neural Network Exchange)** 소개.
+- **데이터 드리프트 (Data Drift)**: 시간이 지남에 따라 실제 데이터의 분포가 학습 시점의 데이터와 달라져 모델 성능이 저하되는 현상. 이를 모니터링하고 주기적으로 모델을 재학습해야 하는 필요성을 언급해야 합니다.
+
+**실무적 중요성**
+모델을 만드는 것과 서비스를 운영하는 것은 완전히 다른 차원의 문제입니다. 배포와 운영에 대한 개념적 이해는 주니어와 시니어 엔지니어를 가르는 중요한 기준이 됩니다.
 
 ## 8. Scikit-learn과 다른 라이브러리 연동
 

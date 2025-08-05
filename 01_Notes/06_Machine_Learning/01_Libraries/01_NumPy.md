@@ -24,7 +24,7 @@
   - [3.3. 불리언 인덱싱 (Boolean Indexing)](#33-불리언-인덱싱-boolean-indexing)
   - [3.4. 팬시 인덱싱 (Fancy Indexing)](#34-팬시-인덱싱-fancy-indexing)
 - [4. NumPy 기본 연산](#4-numpy-기본-연산)
-  - [4.1. 벡터화된 연산](#41-벡터화된-연산)
+  - [4.1. 유니버설 함수 (Universal Functions, ufuncs)와 벡터화](#41-유니버설-함수-universal-functions-ufuncs와-벡터화)
   - [4.2. 브로드캐스팅 (Broadcasting)](#42-브로드캐스팅-broadcasting)
   - [4.3. 행렬 곱셈 (Dot Product)](#43-행렬-곱셈-dot-product)
   - [4.4. 집계 함수 (Aggregation Functions)](#44-집계-함수-aggregation-functions)
@@ -34,6 +34,7 @@
 - [5. NumPy 파일 입출력](#5-numpy-파일-입출력)
   - [5.1. 단일 배열 저장/로드: `np.save()`, `np.load()`](#51-단일-배열-저장로드-npsave-npload)
   - [5.2. 여러 배열 저장/로드: `np.savez()`](#52-여러-배열-저장로드-npsavez)
+  - [5.3. 대용량 파일을 위한 메모리 매핑: np.memmap](#53-대용량-파일을-위한-메모리-매핑-npmemmap)
 - [6. 기타 유용한 기능](#6-기타-유용한-기능)
   - [6.1. 난수 생성](#61-난수-생성)
   - [6.2. 샘플링 및 순열](#62-샘플링-및-순열)
@@ -48,13 +49,22 @@
 - [8. 추가 고급 기능](#8-추가-고급-기능)
   - [8.1. 정렬 및 검색](#81-정렬-및-검색)
   - [8.2. 브로드캐스팅 규칙 심화](#82-브로드캐스팅-규칙-심화)
+    - [8.2.1. 브로드캐스팅의 한계 및 주의점](#821-브로드캐스팅의-한계-및-주의점)
   - [8.3. 마스킹 (Masking)](#83-마스킹-masking)
   - [8.4. 구조화 배열 (Structured Arrays)](#84-구조화-배열-structured-arrays)
   - [8.5. 메모리 관리 및 뷰 vs. 복사](#85-메모리-관리-및-뷰-vs-복사)
+  - [8.5.1. 고급 뷰 생성: 스트라이드 트릭](#851-고급-뷰-생성-스트라이드-트릭)
   - [8.6. 성능 최적화 팁](#86-성능-최적화-팁)
+    - [상세 설명](#상세-설명)
+    - [8.6.1. `np.vectorize`의 사용과 주의점](#861-npvectorize의-사용과-주의점)
+    - [8.6.2 메모리 레이아웃 (C-order vs F-order)과 성능 최적화](#862-메모리-레이아웃-c-order-vs-f-order과-성능-최적화)
+    - [상세 설명](#상세-설명-1)
   - [8.7. NumPy와 다른 라이브러리 연동](#87-numpy와-다른-라이브러리-연동)
   - [8.8. 실제 ML/DL 적용 사례](#88-실제-mldl-적용-사례)
   - [8.9. 다항식 피팅 (Polynomial Fitting)](#89-다항식-피팅-polynomial-fitting)
+  - [8.10. 결측치(NaN) 처리](#810-결측치nan-처리)
+  - [8.11. `einsum`을 이용한 텐서 연산](#811-einsum을-이용한-텐서-연산)
+    - [상세 설명](#상세-설명-2)
 
 ---
 
@@ -810,6 +820,12 @@ loaded_data2 = outfile['key2']
 print(f"로드된 data1: {loaded_data1}")
 print(f"로드된 data2: {loaded_data2}")
 ```
+### 5.3. 대용량 파일을 위한 메모리 매핑: np.memmap
+
+RAM 용량을 초과하는 매우 큰 데이터 파일을 다뤄야 할 때 `np.memmap`은 핵심적인 도구입니다. 이는 디스크 상의 파일을 메모리에 있는 배열처럼 취급하게 해줍니다. 데이터의 필요한 부분만 메모리로 읽어오기 때문에, RAM보다 훨씬 큰 데이터셋도 효율적으로 처리할 수 있습니다.
+
+**실무적 중요성**
+수십, 수백 GB 크기의 과학 데이터나 로그 데이터를 직접 분석해야 할 때, 데이터를 작은 조각으로 나누는 복잡한 과정 없이도 NumPy의 강력한 인덱싱과 슬라이싱을 그대로 활용할 수 있게 해줍니다.
 
 ## 6. 기타 유용한 기능
 
@@ -1405,6 +1421,9 @@ print(f"\nreshape (뷰): {reshaped_arr}")
 reshaped_arr[0, 0] = 1000 # reshape된 뷰 수정
 print(f"reshape 뷰 수정 후 원본 배열: {arr}") # 원본도 변경됨
 ```
+### 8.5.1. 고급 뷰 생성: 스트라이드 트릭
+
+`np.lib.stride_tricks.as_strided`는 메모리 복사 없이, 기존 배열의 메모리를 특정 간격(stride)으로 건너뛰며 읽는 방식으로 새로운 형태의 뷰(View)를 생성하는 매우 강력한 고급 기능입니다. 이를 활용하면 시계열 데이터의 롤링 윈도우(Rolling Window)와 같은 연산을 매우 효율적으로 구현할 수 있습니다. 다만, 메모리를 직접 다루는 방식이므로 잘못 사용하면 메모리 손상을 일으킬 수 있어 주의가 필요합니다.
 
 ### 8.6. 성능 최적화 팁
 
@@ -1477,6 +1496,14 @@ NumPy는 기본적으로 매우 효율적이지만, 대규모 데이터셋이나
 
     print(f"np.dot 결과와 einsum 결과가 동일한가? {np.allclose(C_dot, C_einsum)}")
     
+6. **메모리 레이아웃 (C-order vs F-order)과 성능 최적화**
+
+#### 상세 설명
+NumPy 배열은 메모리에 데이터를 저장하는 방식에 따라 C-order(행 우선, Row-major)와 F-order(열 우선, Column-major)로 나뉩니다. 기본값은 C-order이며, 이는 행의 데이터들이 메모리상에 연속적으로 위치함을 의미합니다. F-order는 열의 데이터들이 연속적으로 위치합니다. 데이터 접근 패턴(행 단위 접근이 잦은지, 열 단위 접근이 잦은지)과 메모리 레이아웃이 일치할 때, CPU 캐시 효율성이 극대화되어 연산 속도가 크게 향상될 수 있습니다. 대용량 데이터를 다룰 때 이 차이는 매우 중요합니다.
+
+- **확인 방법**: `ndarray.flags` 속성을 통해 배열의 메모리 레이아웃(`C_CONTIGUOUS`, `F_CONTIGUOUS`)을 확인할 수 있습니다.
+- **변환 방법**: `np.ascontiguousarray()`, `np.asfortranarray()`를 사용하여 특정 레이아웃으로 배열을 변환(복사)할 수 있습니다.
+  
 #### 8.6.1. `np.vectorize`의 사용과 주의점
 
 때로는 NumPy의 ufunc로 구현되지 않은 복잡한 순수 파이썬 함수를 배열의 모든 요소에 적용하고 싶을 때가 있습니다. 이때 `np.vectorize`를 사용하면 함수를 벡터화된 것처럼 보이게 만들 수 있습니다.
@@ -1511,7 +1538,13 @@ arr = np.array([1, 6, 3, 8])
 result_fast = np.where(arr > 5, arr * 2, arr / 2)
 print(f"where를 이용한 결과: {result_fast}")
 ```
-    
+#### 8.6.2 메모리 레이아웃 (C-order vs F-order)과 성능 최적화
+
+#### 상세 설명
+NumPy 배열은 메모리에 데이터를 저장하는 방식에 따라 C-order(행 우선, Row-major)와 F-order(열 우선, Column-major)로 나뉩니다. 기본값은 C-order이며, 이는 행의 데이터들이 메모리상에 연속적으로 위치함을 의미합니다. F-order는 열의 데이터들이 연속적으로 위치합니다. 데이터 접근 패턴(행 단위 접근이 잦은지, 열 단위 접근이 잦은지)과 메모리 레이아웃이 일치할 때, CPU 캐시 효율성이 극대화되어 연산 속도가 크게 향상될 수 있습니다. 대용량 데이터를 다룰 때 이 차이는 매우 중요합니다.
+
+- **확인 방법**: `ndarray.flags` 속성을 통해 배열의 메모리 레이아웃(`C_CONTIGUOUS`, `F_CONTIGUOUS`)을 확인할 수 있습니다.
+- **변환 방법**: `np.ascontiguousarray()`, `np.asfortranarray()`를 사용하여 특정 레이아웃으로 배열을 변환(복사)할 수 있습니다.
 
 ### 8.7. NumPy와 다른 라이브러리 연동
 
@@ -1602,6 +1635,13 @@ NumPy는 파이썬의 과학 계산 생태계의 핵심이며, 다른 주요 라
     # back_to_np_from_torch = torch_tensor.numpy()
     # print(f"\nPyTorch Tensor -> NumPy 배열:\n{back_to_np_from_torch}")
     ```
+
+5. **CuPy(GPU Acceleration)**
+
+현대 머신러닝, 특히 딥러닝에서는 대규모 행렬 연산을 GPU로 가속하는 것이 필수적입니다. **CuPy**는 NumPy와 거의 동일한 API를 제공하면서, 내부적으로는 NVIDIA GPU의 CUDA를 사용하여 연산을 수행하는 라이브러리입니다. `np.array`를 `cp.array`로 바꾸는 것만으로도 코드 변경을 최소화하며 엄청난 성능 향상을 얻을 수 있습니다.
+
+**실무적 중요성**
+NumPy로 프로토타이핑을 마친 후, 성능 병목이 발생하는 부분을 CuPy로 전환하여 손쉽게 가속하는 것은 실무에서 매우 일반적인 최적화 전략입니다.
 
 ### 8.8. 실제 ML/DL 적용 사례
 
@@ -1782,3 +1822,13 @@ mean_val = np.nanmean(arr_with_nan)
 arr_filled_mean = np.where(nan_indices, mean_val, arr_with_nan)
 print(f"결측치를 평균값({mean_val:.2f})으로 대체: {arr_filled_mean}")
 ```
+
+### 8.11. `einsum`을 이용한 텐서 연산
+
+#### 상세 설명
+`np.einsum`은 아인슈타인 표기법을 사용하여 다차원 배열 간의 복잡한 연산을 간결하고 효율적으로 수행하는 함수입니다. 단순 행렬 곱셈을 넘어, 전치(Transpose), 대각합(Trace), 배치 행렬 곱셈(Batch Matrix Multiplication), 텐서 축소(Tensor Contraction) 등 거의 모든 종류의 다차원 배열 연산을 하나의 직관적인 문자열로 표현할 수 있습니다. 딥러닝 모델 구현이나 복잡한 과학 계산에서 코드를 매우 간결하고 가독성 높게 만들어 줍니다.
+
+- **예시**:
+  - `np.einsum('ij->ji', A)`: 전치 행렬
+  - `np.einsum('ii->i', A)`: 대각 요소 추출
+  - `np.einsum('bij,bjk->bik', A, B)`: 배치 행렬 곱셈
