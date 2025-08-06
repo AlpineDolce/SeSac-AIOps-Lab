@@ -14,28 +14,39 @@
   - [2.2 Conda 가상 환경: 프로젝트별 독립 공간 만들기](#22-conda-가상-환경-프로젝트별-독립-공간-만들기)
   - [2.3 Conda와 pip/venv 비교](#23-conda와-pipvenv-비교)
   - [2.4 일반 파이썬 프로젝트를 위한 가상 환경 (`venv`)](#24-일반-파이썬-프로젝트를-위한-가상-환경-venv)
+  - [2.5 재현 가능한 개발 환경 구축 전략 (environment.yml vs requirements.txt)](#25-재현-가능한-개발-환경-구축-전략-environmentyml-vs-requirementstxt)
 - [3. 파이썬 개발 환경: 주요 IDE 선택 가이드](#3-파이썬-개발-환경-주요-ide-선택-가이드)
   - [3.1 Jupyter](#31-jupyter)
     - [3.1.1 Jupyter Notebook/Lab의 특징](#311-jupyter-notebooklab의-특징)
     - [3.1.2 셀(Cell) 기반의 대화형 코딩](#312-셀cell-기반의-대화형-코딩)
     - [3.1.3 마크다운(Markdown)을 활용한 문서화](#313-마크다운markdown을-활용한-문서화)
+    - [3.1.4 JupyterLab 확장 (Extensions)](#314-jupyterlab-확장-extensions)
   - [3.2 VSCode](#32-vscode)
     - [3.2.1 Jupyter Notebook 활용하기](#321-jupyter-notebook-활용하기)
     - [3.2.2 필수 확장 프로그램: Python과 Pylance](#322-필수-확장-프로그램-python과-pylance)
     - [3.2.3 VSCode에서 파이썬 인터프리터 선택](#323-vscode에서-파이썬-인터프리터-선택)
+    - [3.2.4 VSCode 원격 개발 (Remote Development)](#324-vscode-원격-개발-remote-development)
+    - [3.2.5 IDE에서 가상 환경 관리 (VSCode, PyCharm)](#325-ide에서-가상-환경-관리-vscode-pycharm)
   - [3.3 PyCharm](#33-pycharm)
   - [3.4 주요 IDE/환경 비교: Jupyter, VSCode, PyCharm](#34-주요-ide환경-비교-jupyter-vscode-pycharm)
 - [4. 코드 품질 관리: `black`과 `ruff` 설정](#4-코드-품질-관리-black과-ruff-설정)
   - [4.1 코드 포맷터 `black`으로 스타일 일관성 유지](#41-코드-포맷터-black으로-스타일-일관성-유지)
   - [4.2 린터 `ruff`로 잠재적 오류 검사](#42-린터-ruff로-잠재적-오류-검사)
   - [4.3 Pre-commit Hooks: 커밋 전 자동 코드 품질 검사](#43-pre-commit-hooks-커밋-전-자동-코드-품질-검사)
+- [4.4 Git을 활용한 버전 관리 기초 (Basic Version Control with Git)](#44-git을-활용한-버전-관리-기초-basic-version-control-with-git)
 - [5. 첫걸음: 파이썬 코드 작성과 실행](#5-첫걸음-파이썬-코드-작성과-실행)
   - [5.1 주석(Comment)의 종류와 올바른 사용법](#51-주석comment의-종류와-올바른-사용법)
   - [5.2 `print()` 함수를 이용한 기본 출력](#52-print-함수를-이용한-기본-출력)
+- [5.3 파이썬 스크립트 실행 및 명령줄 기본 (Python Script Execution & Basic Command Line)](#53-파이썬-스크립트-실행-및-명령줄-기본-python-script-execution--basic-command-line)
 - [6. 다음 단계: 고급 환경 관리 및 배포](#6-다음-단계-고급-환경-관리-및-배포)
   - [6.1 컨테이너화 (Containerization)와 Docker](#61-컨테이너화-containerization와-docker)
   - [6.2 클라우드 환경 활용](#62-클라우드-환경-활용)
 - [7. 환경 설정 시 흔히 발생하는 문제 및 해결책](#7-환경-설정-시-흔히-발생하는-문제-및-해결책)
+  - [7.1 PATH 환경 변수 문제](#71-path-환경-변수-문제)
+  - [7.2 패키지 설치 오류](#72-패키지-설치-오류)
+  - [7.3 Jupyter Notebook/Lab 실행 문제](#73-jupyter-notebooklab-실행-문제)
+  - [7.4 인코딩(Encoding) 문제](#74-인코딩encoding-문제)
+  - [7.5 복잡한 라이브러리 설치 문제 해결 (GPU, 특정 의존성)](#75-복잡한-라이브러리-설치-문제-해결-gpu-특정-의존성)
 
 ---
 
@@ -145,6 +156,16 @@ Readability counts.                 (가독성은 중요하다.)
     conda install pandas numpy matplotlib seaborn jupyterlab
     ```
     **Conda 환경 내 `pip` 사용 주의:** Conda 환경 내에서 패키지를 설치할 때는 가급적 `conda install`을 우선적으로 사용하고, `conda` 채널에 없는 패키지에 한해서만 `pip install`을 사용하는 것이 좋습니다. 이는 `conda`가 바이너리 의존성까지 관리하는 반면, `pip`는 파이썬 패키지 의존성만 관리하기 때문에 발생할 수 있는 충돌을 최소화하기 위함입니다.
+
+    **GPU 환경 설정 (개념적):**
+    데이터 과학, 특히 딥러닝 분야에서 GPU는 필수적인 연산 자원입니다. `conda`는 `CUDA Toolkit`, `cuDNN`과 같은 GPU 관련 라이브러리들을 파이썬 패키지(`pytorch`, `tensorflow` 등)와 함께 통합하여 관리할 수 있는 강력한 기능을 제공합니다. 이는 복잡한 GPU 환경 설정을 크게 단순화하여, 개발자가 환경 구축에 드는 시간을 줄이고 모델 개발에 집중할 수 있도록 돕습니다.
+    ```bash
+    # 예시: PyTorch와 CUDA 11.3 버전을 함께 설치 (conda-forge 채널 사용)
+    conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c conda-forge
+    # 예시: TensorFlow와 GPU 지원 패키지 설치
+    conda install tensorflow-gpu -c conda-forge
+    ```
+    `conda`를 사용하면 `CUDA` 버전과 딥러닝 프레임워크 버전 간의 호환성 문제를 효과적으로 관리할 수 있습니다.
   **5. Jupyter Lab 실행:** 필요한 라이브러리가 설치된 환경 안에서 Jupyter Lab을 실행해야 해당 환경의 파이썬과 라이브러리를 사용하게 됩니다.
     ```bash
     # (my_project) C:\Users\Admin> 
@@ -154,56 +175,6 @@ Readability counts.                 (가독성은 중요하다.)
     ```bash
     conda deactivate
     ```
-  **7. Conda 환경 관리 심화:**
-    - **환경 목록 확인:** `conda env list` 또는 `conda info --envs`
-      ```bash
-      conda env list
-      ```
-    - **환경 삭제:** `conda remove --name my_project --all`
-      ```bash
-      conda remove --name my_project --all
-      ```
-    - **환경 내보내기 (공유):** `conda env export --no-builds > environment.yml`
-      ```bash
-      conda env export --no-builds > environment.yml
-      ```
-      이 명령은 현재 활성화된 환경의 모든 패키지와 파이썬 버전을 `environment.yml` 파일로 저장합니다. `--no-builds` 플래그를 사용하면 빌드 스트링을 제외하여 다른 운영체제나 아키텍처 간의 이식성을 높여줍니다. 이 파일을 공유하면 다른 개발자가 동일한 환경을 쉽게 재현할 수 있습니다. **이는 데이터/AI 프로젝트에서 환경 재현성을 보장하는 가장 강력하고 권장되는 방법입니다.**
-
-      **`pip freeze > requirements.txt`와 `conda env export > environment.yml`의 차이점:**
-      | 구분 | `pip freeze > requirements.txt` | `conda env export > environment.yml` |
-      | :--- | :--- | :--- |
-      | **관리 범위** | 현재 `pip`로 설치된 파이썬 패키지 및 버전만 기록 | `conda` 환경에 설치된 모든 패키지(파이썬, C/C++ 라이브러리 등) 및 파이썬 버전, 채널 정보까지 기록 |
-      | **재현성** | 파이썬 패키지 의존성만 재현 | 환경 전체(파이썬 인터프리터, 시스템 라이브러리 포함)를 완벽하게 재현 |
-      | **주요 용도** | 간단한 파이썬 프로젝트의 패키지 의존성 공유 | 데이터 과학/AI 프로젝트와 같이 복잡한 바이너리 의존성을 가진 환경의 완벽한 재현 및 공유 |
-
-      **새로운 `environment.yml` 파일 생성 예시:**
-      ```yaml
-      # environment.yml
-      name: my_new_project_env
-      channels:
-        - defaults
-        - conda-forge # conda-forge는 더 많은 패키지를 제공하고 최신 버전을 빠르게 반영하는 커뮤니티 기반 채널입니다. 채널 순서는 중요합니다. 일반적으로 `conda-forge`를 `defaults`보다 위에 두어 `conda-forge`에서 제공하는 패키지를 우선적으로 사용하도록 권장합니다.
-      dependencies:
-        - python=3.9.13 # 특정 패키지 버전을 명시하여 재현성을 극대화합니다.
-        - pandas=1.5.3
-        - numpy=1.23.5
-        - matplotlib=3.7.1
-        - seaborn=0.12.2
-        - jupyterlab=3.6.3
-        - scikit-learn=1.2.2
-        - pip
-        - pip:
-          - black==24.4.2
-          - ruff==0.4.4
-          - pre-commit==3.7.0
-      ```
-      이 파일을 사용하여 환경을 생성하려면: `conda env create -f environment.yml`
-    - **환경 가져오기 (재현):** `conda env create -f environment.yml`
-      ```bash
-      conda env create -f environment.yml
-      ```
-      `environment.yml` 파일로부터 새로운 환경을 생성합니다. 이는 프로젝트의 재현성을 보장하는 핵심적인 방법입니다.
-
 ### 2.3 Conda와 pip/venv 비교
 
 | 구분 | `pip` / `venv` | `conda` |
@@ -233,6 +204,53 @@ Anaconda를 사용하지 않는 일반 파이썬 프로젝트에서도 가상 �
     3.  **패키지 설치:** 활성화된 가상 환경에서 `pip install package_name` 명령어를 사용하여 패키지를 설치합니다. 이 패키지는 현재 가상 환경에만 설치됩니다.
     4.  **가상 환경 비활성화:** `deactivate`
 
+### 2.5 재현 가능한 개발 환경 구축 전략 (environment.yml vs requirements.txt)
+
+데이터 과학 프로젝트에서 환경 재현성(Reproducibility)은 매우 중요합니다. 다른 개발자와 협업하거나, 시간이 지난 후 프로젝트를 다시 실행할 때 동일한 환경을 정확히 재현할 수 있어야 합니다. `environment.yml` 파일과 `requirements.txt` 파일은 이러한 재현성을 보장하는 핵심 도구입니다.
+
+- **`conda env export > environment.yml`:**
+  이 명령은 현재 활성화된 Conda 환경의 모든 패키지(파이썬, C/C++ 라이브러리 등)와 파이썬 버전, 채널 정보까지 `environment.yml` 파일로 저장합니다. `--no-builds` 플래그를 사용하면 빌드 스트링을 제외하여 다른 운영체제나 아키텍처 간의 이식성을 높여줍니다. 이 파일을 공유하면 다른 개발자가 동일한 환경을 쉽게 재현할 수 있습니다. **이는 데이터/AI 프로젝트에서 환경 재현성을 보장하는 가장 강력하고 권장되는 방법입니다.**
+
+- **`pip freeze > requirements.txt`:**
+  이 명령은 현재 파이썬 가상 환경에 `pip`로 설치된 파이썬 패키지 및 버전만 `requirements.txt` 파일로 기록합니다.
+
+**`pip freeze > requirements.txt`와 `conda env export > environment.yml`의 차이점:**
+
+| 구분 | `pip freeze > requirements.txt` | `conda env export > environment.yml` |
+| :--- | :--- | :--- |
+| **관리 범위** | 현재 `pip`로 설치된 파이썬 패키지 및 버전만 기록 | `conda` 환경에 설치된 모든 패키지(파이썬, C/C++ 라이브러리 등) 및 파이썬 버전, 채널 정보까지 기록 |
+| **재현성** | 파이썬 패키지 의존성만 재현 | 환경 전체(파이썬 인터프리터, 시스템 라이브러리 포함)를 완벽하게 재현 |
+| **주요 용도** | 간단한 파이썬 프로젝트의 패키지 의존성 공유 | 데이터 과학/AI 프로젝트와 같이 복잡한 바이너리 의존성을 가진 환경의 완벽한 재현 및 공유 |
+
+**새로운 `environment.yml` 파일 생성 예시:**
+```yaml
+# environment.yml
+name: my_new_project_env
+channels:
+  - defaults
+  - conda-forge # conda-forge는 더 많은 패키지를 제공하고 최신 버전을 빠르게 반영하는 커뮤니티 기반 채널입니다. 특히 데이터 과학 및 AI 관련 패키지(예: `pytorch`, `tensorflow`, `scikit-learn` 등)의 최신 버전과 바이너리 의존성을 안정적으로 제공합니다. 채널 순서는 중요합니다. 일반적으로 `conda-forge`를 `defaults`보다 위에 두어 `conda-forge`에서 제공하는 패키지를 우선적으로 사용하도록 권장합니다.
+dependencies:
+  - python=3.9.13 # 특정 패키지 버전을 명시하여 재현성을 극대화합니다.
+  - pandas=1.5.3
+  - numpy=1.23.5
+  - matplotlib=3.7.1
+  - seaborn=0.12.2
+  - jupyterlab=3.6.3
+  - scikit-learn=1.2.2
+  - pip
+  - pip:
+    - black==24.4.2
+    - ruff==0.4.4
+    - pre-commit==3.7.0
+```
+이 파일을 사용하여 환경을 생성하려면: `conda env create -f environment.yml`
+
+**환경 가져오기 (재현):**
+```bash
+conda env create -f environment.yml
+```
+`environment.yml` 파일로부터 새로운 환경을 생성합니다. 이는 프로젝트의 재현성을 보장하는 핵심적인 방법입니다.
+
 ## 3. 파이썬 개발 환경: 주요 IDE 선택 가이드
 
 ### 3.1 Jupyter
@@ -242,7 +260,6 @@ Jupyter는 코드, 시각화, 설명 텍스트를 하나의 문서에 담아 대
 - **대화형 환경:** Jupyter는 코드를 작은 단위(셀)로 나누어 실행하고, 그 결과를 즉시 확인할 수 있는 대화형 환경을 제공합니다. Anaconda 설치 시 기본적으로 포함됩니다.
 - **탐색적 데이터 분석(EDA) 최적화:** 데이터 분석은 가설을 세우고 빠르게 검증하는 탐색적 과정이 중요합니다. Jupyter는 이러한 반복적인 분석 작업에 최적화되어, 데이터의 패턴을 직관적으로 파악하고 인사이트를 얻는 데 매우 효율적입니다.
 - **한계점:** 대규모 프로젝트의 코드 관리, 복잡한 버전 관리, 심층적인 디버깅에는 제한적일 수 있습니다. 스크립트 형태의 코드 개발보다는 탐색적 분석 및 보고서 작성에 더 적합합니다.
-- **JupyterLab 확장 (Extensions):** JupyterLab은 다양한 확장 기능을 통해 기능을 확장할 수 있습니다. Git 통합, 목차 생성, 변수 탐색기 등 유용한 확장 기능들을 활용하면 JupyterLab의 생산성과 사용자 경험을 크게 향상시킬 수 있습니다.
 
 #### 3.1.2 셀(Cell) 기반의 대화형 코딩
 - **셀 단위 실행:** Jupyter는 '코드 셀'과 '마크다운 셀'로 구성됩니다. 각 셀은 독립적으로 실행할 수 있지만, 노트북 전체의 변수와 상태는 공유됩니다.
@@ -251,6 +268,10 @@ Jupyter는 코드, 시각화, 설명 텍스트를 하나의 문서에 담아 대
 #### 3.1.3 마크다운(Markdown)을 활용한 문서화
 - **코드와 설명의 통합:** 마크다운 셀을 사용하면 코드 셀 사이에 상세한 설명, 수식, 이미지, 링크 등을 추가하여 분석 과정을 체계적으로 문서화할 수 있습니다.
 - **보고서 작성:** 분석 결과는 **코드 자체만큼이나 그 과정과 해석을 전달하는 것이 중요**합니다. Jupyter는 코드, 실행 결과, 설명을 하나의 문서로 통합하여 분석 보고서를 만드는 데 매우 효과적이며, 이는 협업과 기록 관리에 필수적입니다.
+
+#### 3.1.4 JupyterLab 확장 (Extensions)
+- JupyterLab은 다양한 확장 기능을 통해 기능을 확장할 수 있습니다. Git 통합, 목차 생성, 변수 탐색기, 코드 포맷터 등 유용한 확장 기능들을 활용하면 JupyterLab의 생산성과 사용자 경험을 크게 향상시킬 수 있습니다. 
+- 특히 데이터 과학 워크플로우에서는 **변수 탐색기(Variable Inspector)**, **목차(Table of Contents)**, **코드 포맷터(Prettier, Black)**, **Git 통합** 확장 등이 EDA 및 보고서 작성 효율을 크게 높여줍니다.
 
 ### 3.2 VSCode
 VSCode는 마이크로소프트에서 개발한 경량의 강력한 코드 에디터로, 다양한 확장 프로그램을 통해 파이썬 개발에 최적화된 환경을 제공합니다.
@@ -284,6 +305,35 @@ VSCode에서 작업할 때, 현재 프로젝트에 맞는 Conda 가상 환경의
       "editor.formatOnSave": true // 저장 시 자동 포맷팅
   }
   ```
+
+- **VSCode 원격 개발 (Remote Development):**
+  데이터 과학자들은 종종 고성능 서버나 클라우드 인스턴스에서 모델 학습 및 대규모 데이터 처리를 수행합니다. VSCode의 `Remote - SSH` 확장 기능을 사용하면 로컬 컴퓨터에서 VSCode를 실행하면서도 원격 서버에 직접 연결하여 코드를 편집하고, 터미널을 사용하며, 디버깅을 수행할 수 있습니다. 이는 마치 원격 서버에서 VSCode를 직접 실행하는 것과 같은 경험을 제공하여, 로컬과 원격 환경 간의 개발 격차를 줄여줍니다.
+  *   **장점:** 로컬 자원 소모를 줄이고, 원격 서버의 강력한 컴퓨팅 자원(GPU 등)을 활용할 수 있습니다. 환경 일관성을 유지하면서 협업하기 용이합니다.
+  *   **설치:** VSCode 확장 마켓플레이스에서 `Remote Development` 확장 팩을 설치합니다.
+  *   **활용:** `Ctrl+Shift+P` (Cmd+Shift+P)를 눌러 명령 팔레트를 열고 `Remote-SSH: Connect to Host...`를 선택하여 원격 서버에 연결합니다.
+
+#### 3.2.5 IDE에서 가상 환경 관리 (VSCode, PyCharm)
+
+대부분의 현대적인 IDE는 파이썬 가상 환경을 쉽게 관리하고 전환할 수 있는 기능을 제공합니다. 이를 통해 프로젝트별로 독립된 환경을 유지하면서도 편리하게 개발할 수 있습니다.
+
+-   **VSCode에서 가상 환경 선택 및 관리:**
+    1.  **인터프리터 선택:** `Ctrl+Shift+P` (macOS: `Cmd+Shift+P`)를 눌러 명령 팔레트를 열고 `Python: Select Interpreter`를 입력하여 선택합니다. VSCode가 자동으로 Conda, venv 등 시스템에서 감지된 파이썬 환경 목록을 보여줍니다. 원하는 가상 환경을 선택하면 해당 환경의 패키지들을 인식하고 코드 자동 완성, 린팅 등이 활성화됩니다.
+    2.  **새 가상 환경 생성:** 명령 팔레트에서 `Python: Create Environment`를 선택하여 `venv` 또는 `Conda` 환경을 생성할 수 있습니다.
+    3.  **`settings.json`을 통한 고정:** 프로젝트 루트에 `.vscode/settings.json` 파일을 생성하여 특정 가상 환경의 경로를 고정할 수 있습니다. 이는 팀 프로젝트에서 환경 일관성을 유지하는 데 유용합니다.
+        ```json
+        // .vscode/settings.json
+        {
+            "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe" // venv 예시
+            // "python.defaultInterpreterPath": "/path/to/your/conda/envs/my_project/python.exe" // Conda 예시
+        }
+        ```
+
+-   **PyCharm에서 가상 환경 설정 및 관리:**
+    1.  **인터프리터 설정:** `File > Settings` (macOS: `PyCharm > Preferences`)로 이동하여 `Project: [프로젝트명] > Python Interpreter`를 선택합니다.
+    2.  **기존 환경 추가:** `Add Interpreter` 버튼을 클릭하고 `Conda Environment`, `Virtualenv Environment` 등을 선택하여 기존에 생성된 가상 환경을 추가할 수 있습니다.
+    3.  **새 환경 생성:** `Add Interpreter`에서 `New environment`를 선택하여 프로젝트 전용 가상 환경을 생성할 수 있습니다.
+
+**실무적 의미:** IDE의 가상 환경 관리 기능을 숙지하는 것은 개발 워크플로우를 크게 효율화합니다. 특히 여러 프로젝트를 동시에 진행하거나, 특정 라이브러리 버전에 의존하는 경우 환경 충돌 없이 안정적인 개발 환경을 유지하는 데 필수적입니다.
 
 ### 3.3 PyCharm
 
@@ -407,6 +457,60 @@ PyCharm은 JetBrains에서 개발한 전문적인 파이썬 통합 개발 환경
   - **일관성:** 모든 팀원이 동일한 코드 품질 기준을 따르도록 강제하여 코드베이스의 일관성을 유지합니다.
   - **생산성:** 코드 리뷰 시 스타일 문제 대신 로직 자체에 집중할 수 있게 하여 생산성을 높입니다.
 
+### 4.4 Git을 활용한 버전 관리 기초 (Basic Version Control with Git)
+
+현대 소프트웨어 개발, 특히 협업이 필수적인 데이터 과학 및 AI 프로젝트에서 버전 관리 시스템(VCS)은 필수적인 도구입니다. Git은 가장 널리 사용되는 분산 버전 관리 시스템이며, 코드 변경 이력을 추적하고 여러 개발자가 동시에 작업할 수 있도록 돕습니다.
+
+-   **Git 설치 및 초기 설정:**
+    -   [Git 공식 웹사이트](https://git-scm.com/downloads)에서 운영체제에 맞는 Git을 설치합니다.
+    -   설치 후 터미널에서 사용자 이름과 이메일을 설정합니다:
+        ```bash
+        git config --global user.name "Your Name"
+        git config --global user.email "your_email@example.com"
+        ```
+
+-   **기본 Git 워크플로우:**
+    1.  **저장소 초기화 (`git init`):** 새로운 프로젝트에서 Git을 시작합니다.
+        ```bash
+        git init
+        ```
+    2.  **파일 추적 (`git add`):** 변경된 파일을 스테이징 영역(Staging Area)에 추가합니다. 커밋할 준비가 된 파일들을 모아두는 곳입니다.
+        ```bash
+        git add .        # 모든 변경된 파일 추가
+        git add <file_name> # 특정 파일만 추가
+        ```
+    3.  **변경 사항 기록 (`git commit`):** 스테이징 영역의 파일들을 로컬 저장소에 영구적으로 기록합니다. 이때 변경 내용에 대한 설명(커밋 메시지)을 작성합니다.
+        ```bash
+        git commit -m "feat: Add initial project structure"
+        ```
+    4.  **상태 확인 (`git status`):** 현재 작업 디렉토리의 상태(수정된 파일, 스테이징된 파일, 추적되지 않는 파일 등)를 확인합니다.
+        ```bash
+        git status
+        ```
+    5.  **변경 내용 확인 (`git diff`):** 현재 작업 디렉토리의 변경 사항을 확인합니다.
+        ```bash
+        git diff          # 추적 중인 파일의 변경 사항
+        git diff --staged # 스테이징된 파일의 변경 사항
+        ```
+    6.  **원격 저장소 연결 및 푸시 (`git remote`, `git push`):** GitHub, GitLab, Bitbucket 등 원격 저장소에 코드를 공유합니다.
+        ```bash
+        git remote add origin <remote_repository_url>
+        git push -u origin main # 또는 master
+        ```
+    7.  **변경 사항 가져오기 (`git pull`):** 원격 저장소의 최신 변경 사항을 로컬로 가져와 병합합니다.
+        ```bash
+        git pull origin main # 또는 master
+        ```
+
+-   **`.gitignore` 파일:**
+    -   Git이 추적하지 않아야 할 파일이나 디렉토리(예: 가상 환경 폴더, 캐시 파일, 민감한 설정 파일, 데이터 파일)를 `.gitignore` 파일에 명시합니다.
+    -   예시: `.venv/`, `__pycache__/`, `*.log`, `.env`, `data/`
+
+**실무적 의미:**
+-   **협업:** 팀원들과 코드 변경 사항을 효율적으로 공유하고 병합할 수 있습니다.
+-   **이력 관리:** 모든 코드 변경 이력이 기록되므로, 언제든지 이전 버전으로 되돌리거나 특정 변경 사항을 추적할 수 있습니다.
+-   **안전성:** 실수로 코드를 삭제하거나 잘못 변경하더라도 쉽게 복구할 수 있습니다.
+-   **재현성:** 특정 시점의 코드 상태를 정확히 재현할 수 있어 실험의 재현성을 높입니다.
 
 ## 5. 첫걸음: 파이썬 코드 작성과 실행
 
@@ -447,6 +551,51 @@ print(f"사용자 이름: {user_name}, 나이: {user_age}")
 
 - `print()`는 가장 간단하고 직관적인 디버깅 도구입니다. 복잡한 디버거를 사용하기 전에, 코드의 특정 지점에서 변수의 값을 `print()`로 출력해보는 것만으로도 많은 문제를 해결할 수 있습니다.
 - 특히 Jupyter 환경에서는 각 셀의 실행 결과를 바로 확인할 수 있어 빠른 검증에 매우 유용합니다.
+
+### 5.3 파이썬 스크립트 실행 및 명령줄 기본 (Python Script Execution & Basic Command Line)
+
+파이썬 코드를 작성한 후에는 이를 실행하여 결과를 확인해야 합니다. 파이썬 스크립트는 터미널(명령 프롬프트, PowerShell, Bash 등)에서 `python` 명령어를 사용하여 실행할 수 있습니다.
+
+-   **기본 실행:**
+    ```bash
+    python your_script_name.py
+    ```
+    이 명령은 `your_script_name.py` 파일에 작성된 파이썬 코드를 실행합니다.
+
+-   **명령줄 인자 전달:**
+    스크립트를 실행할 때 명령줄 인자(Command-line arguments)를 전달하여 스크립트의 동작을 동적으로 제어할 수 있습니다. `sys` 모듈의 `sys.argv` 리스트를 통해 이 인자들에 접근할 수 있습니다. `sys.argv[0]`은 항상 스크립트 파일의 이름이며, 그 이후의 요소들이 전달된 인자들입니다.
+
+    **예시: `args_example.py`**
+    ```python
+    # args_example.py
+    import sys
+
+    print(f"스크립트 이름: {sys.argv[0]}")
+    if len(sys.argv) > 1:
+        print(f"전달된 인자들: {sys.argv[1:]}")
+        for i, arg in enumerate(sys.argv[1:]):
+            print(f"인자 {i+1}: {arg}")
+    else:
+        print("전달된 명령줄 인자가 없습니다.")
+    ```
+
+    **실행:**
+    ```bash
+    python args_example.py hello world 123
+    ```
+    **출력:**
+    ```
+    스크립트 이름: args_example.py
+    전달된 인자들: ['hello', 'world', '123']
+    인자 1: hello
+    인자 2: world
+    인자 3: 123
+    ```
+
+-   **스크립트 실행 시 주의사항:**
+    -   **현재 디렉토리:** 스크립트를 실행하는 터미널의 현재 작업 디렉토리가 스크립트 파일이 있는 디렉토리이거나, 스크립트 파일의 경로를 정확히 지정해야 합니다.
+    -   **파이썬 인터프리터:** 여러 버전의 파이썬이 설치되어 있다면, 원하는 버전의 파이썬 인터프리터(`python3`, `python3.9` 등)를 명시적으로 사용하여 실행하는 것이 좋습니다.
+    -   **가상 환경:** 가상 환경이 활성화된 상태에서 스크립트를 실행하면, 해당 가상 환경에 설치된 라이브러리들을 사용하게 됩니다.
 
 ## 6. 다음 단계: 고급 환경 관리 및 배포
 
@@ -519,21 +668,38 @@ print(f"사용자 이름: {user_name}, 나이: {user_age}")
 
 파이썬 개발 환경을 설정하는 과정에서 몇 가지 흔한 문제에 직면할 수 있습니다. 다음은 이러한 문제들과 그 해결책입니다.
 
--   **PATH 환경 변수 문제:**
-    *   **증상:** `python` 또는 `conda` 명령어를 터미널에서 실행할 수 없거나, 예상과 다른 버전의 파이썬이 실행됩니다.
-    *   **해결책:** 시스템의 PATH 환경 변수에 올바른 파이썬/Anaconda 경로가 추가되어 있는지 확인하고, 필요하다면 수정합니다. Anaconda 사용 시에는 `Anaconda Prompt`를 사용하는 것이 가장 안전합니다.
--   **패키지 설치 오류:**
-    *   **증상:** `pip install` 또는 `conda install` 시 오류가 발생합니다. (예: `ModuleNotFoundError`, `Permission denied`)
-    *   **해결책:**
-        *   **가상 환경 활성화 확인:** 올바른 가상 환경이 활성화되어 있는지 확인합니다.
-        *   **관리자 권한:** Windows에서는 관리자 권한으로 터미널을 실행해야 할 수 있습니다.
-        *   **인터넷 연결:** 패키지 다운로드를 위해 인터넷 연결을 확인합니다.
-        *   **캐시 문제:** `pip cache purge` 또는 `conda clean --all` 명령어로 캐시를 정리해봅니다.
--   **Jupyter Notebook/Lab 실행 문제:**
-    *   **증상:** `jupyter lab` 실행 시 오류가 발생하거나, 웹 브라우저가 열리지 않습니다.
-    *   **해결책:**
-        *   해당 가상 환경에 `jupyterlab`이 설치되어 있는지 확인합니다 (`conda list jupyterlab`).
-        *   방화벽 설정이 Jupyter의 포트(기본 8888)를 막고 있지 않은지 확인합니다.
--   **인코딩(Encoding) 문제:**
-    *   **증상:** 파일 읽기/쓰기, 웹 데이터 처리 시 한글 등 특정 문자가 깨지거나 `UnicodeDecodeError`/`UnicodeEncodeError`가 발생합니다.
-    *   **해결책:** 파일 열기 시 `encoding='utf-8'`과 같이 명시적으로 인코딩을 지정합니다. 웹 요청 시에도 응답의 인코딩을 확인하거나 명시적으로 지정해야 할 수 있습니다. 파이썬 3에서는 문자열이 유니코드로 처리되지만, 바이트와 문자열 간의 변환 시 인코딩/디코딩 과정에서 문제가 발생할 수 있습니다.
+### 7.1 PATH 환경 변수 문제
+  * **증상:** `python` 또는 `conda` 명령어를 터미널에서 실행할 수 없거나, 예상과 다른 버전의 파이썬이 실행됩니다.
+  * **해결책:** 시스템의 PATH 환경 변수에 올바른 파이썬/Anaconda 경로가 추가되어 있는지 확인하고, 필요하다면 수정합니다. Anaconda 사용 시에는 `Anaconda Prompt`를 사용하는 것이 가장 안전합니다.
+
+### 7.2 패키지 설치 오류
+  **증상:** `pip install` 또는 `conda install` 시 오류가 발생합니다. (예: `ModuleNotFoundError`, `Permission denied`)
+  **해결책:**
+  *    **가상 환경 활성화 확인:** 올바른 가상 환경이 활성화되어 있는지 확인합니다.
+  *    **관리자 권한:** Windows에서는 관리자 권한으로 터미널을 실행해야 할 수 있습니다.
+  *    **인터넷 연결:** 패키지 다운로드를 위해 인터넷 연결을 확인합니다.
+  *    **캐시 문제:** `pip cache purge` 또는 `conda clean --all` 명령어로 캐시를 정리해봅니다.
+
+### 7.3 Jupyter Notebook/Lab 실행 문제
+  **증상:** `jupyter lab` 실행 시 오류가 발생하거나, 웹 브라우저가 열리지 않습니다.
+  **해결책:**
+  *   해당 가상 환경에 `jupyterlab`이 설치되어 있는지 확인합니다 (`conda list jupyterlab`).
+  *   방화벽 설정이 Jupyter의 포트(기본 8888)를 막고 있지 않은지 확인합니다.
+
+### 7.4 인코딩(Encoding) 문제
+  *   **증상:** 파일 읽기/쓰기, 웹 데이터 처리 시 한글 등 특정 문자가 깨지거나 `UnicodeDecodeError`/`UnicodeEncodeError`가 발생합니다.
+  *   **해결책:** 파일 열기 시 `encoding='utf-8'`과 같이 명시적으로 인코딩을 지정합니다. 웹 요청 시에도 응답의 인코딩을 확인하거나 명시적으로 지정해야 할 수 있습니다. 파이썬 3에서는 문자열이 유니코드로 처리되지만, 바이트와 문자열 간의 변환 시 인코딩/디코딩 과정에서 문제가 발생할 수 있습니다.
+
+### 7.5 복잡한 라이브러리 설치 문제 해결 (GPU, 특정 의존성)
+  *   **증상:** GPU를 사용하는 딥러닝 라이브러리(TensorFlow-GPU, PyTorch)나 특정 시스템 의존성을 요구하는 패키지 설치 시 오류가 발생합니다. (예: CUDA/cuDNN 버전 불일치, 컴파일 오류)
+  *   **해결책:**
+      *   **공식 문서 확인:** 가장 먼저 해당 라이브러리의 공식 설치 문서를 참조합니다. GPU 지원 라이브러리는 특정 버전의 CUDA Toolkit, cuDNN, 드라이버 등을 요구하는 경우가 많습니다.
+      *   **Conda 사용:** `conda`는 바이너리 의존성까지 관리하므로, GPU 관련 라이브러리 설치에 매우 유용합니다. `conda-forge`와 같은 채널을 활용하여 호환되는 패키지 조합을 설치하는 것이 좋습니다.
+          ```bash
+          # 예시: PyTorch와 CUDA 11.3 버전 설치 (conda-forge 채널 사용)
+          conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c conda-forge
+          ```
+      *   **환경 변수 설정:** `LD_LIBRARY_PATH` (Linux) 또는 `PATH` (Windows)와 같은 환경 변수에 CUDA/cuDNN 라이브러리 경로가 올바르게 설정되어 있는지 확인합니다.
+      *   **드라이버 업데이트:** GPU 드라이버가 최신 버전인지 확인하고, 필요한 경우 업데이트합니다.
+      *   **독립적인 환경:** 복잡한 라이브러리는 항상 독립적인 Conda 가상 환경에 설치하여 다른 프로젝트와의 충돌을 방지합니다.
+      *   **오류 메시지 검색:** 발생한 오류 메시지를 정확히 복사하여 구글링하면 유사한 문제를 겪은 다른 개발자들의 해결책을 찾을 수 있습니다.
