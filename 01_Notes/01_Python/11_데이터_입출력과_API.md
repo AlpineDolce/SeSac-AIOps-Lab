@@ -7,18 +7,24 @@
 <h2>목차</h2>
 
 - [1. 파일 입출력 (File I/O)](#1-파일-입출력-file-io)
-  - [1.1 `with open(...)`을 사용한 안전한 파일 처리](#11-with-open-을-사용한-안전한-파일-처리)
-  - [1.2 파일 열기 모드 (`'r'`, `'w'`, `'a'`, `'x'`, `'b'`, `'t'`, `'+'`)](#12-파일-열기-모드-r-w-a-x-b-t)
+  - [1.1 `with open(...)`을 사용한 안전한 파일 처리](#11-with-open을-사용한-안전한-파일-처리)
+  - [1.2 파일 열기 모드 (`'r'`, `'w'`, `'a'`, `'x'`, `'b'`, `'t'`, `'+'`)](#12-파일-열기-모드-r-w-a-x-b-t-)
   - [1.3 파일 읽기/쓰기 메서드](#13-파일-읽기쓰기-메서드)
 - [2. 표준 데이터 형식 다루기](#2-표준-데이터-형식-다루기)
   - [2.1 CSV 파일 처리: `csv` 모듈 활용](#21-csv-파일-처리-csv-모듈-활용)
   - [2.2 JSON 데이터 처리: `json` 모듈 활용](#22-json-데이터-처리-json-모듈-활용)
   - [2.3 객체 직렬화: `pickle` 모듈](#23-객체-직렬화-pickle-모듈)
 - [3. 외부 API 연동: `requests` 라이브러리](#3-외부-api-연동-requests-라이브러리)
-- [4. 설정 관리: 환경 변수와 `python-dotenv`](#4-설정-관리-환경-변수와-python-dotenv)
-- [5. 파일 시스템 제어 (`os`, `pathlib`)](#5-파일-시스템-제어-os-pathlib)
-  - [5.1 `os` 모듈: 운영체제와 상호작용](#51-os-모듈-운영체제와-상호작용)
-  - [5.2 `pathlib`: 객체 지향적인 파일 경로 다루기](#52-pathlib-객체-지향적인-파일-경로-다루기)
+  - [3.1 API Rate Limiting (요청 제한) 및 Pagination (페이지네이션)](#31-api-rate-limiting-요청-제한-및-pagination-페이지네이션)
+- [4. 데이터 유효성 검사 (Data Validation)](#4-데이터-유효성-검사-data-validation)
+  - [4.1 왜 데이터 유효성 검사가 중요한가?](#41-왜-데이터-유효성-검사가-중요한가)
+  - [4.2 일반적인 유효성 검사 유형](#42-일반적인-유효성-검사-유형)
+  - [4.3 데이터 유효성 검사 구현 예시](#43-데이터-유효성-검사-구현-예시)
+  - [4.4 고급 유효성 검사 라이브러리](#44-고급-유효성-검사-라이브러리)
+- [5. 설정 관리: 환경 변수와 `python-dotenv`](#5-설정-관리-환경-변수와-python-dotenv)
+- [6. 파일 시스템 제어 (`os`, `pathlib`)](#6-파일-시스템-제어-os-pathlib)
+  - [6.1 `os` 모듈: 운영체제와 상호작용](#61-os-모듈-운영체제와-상호작용)
+  - [6.2 `pathlib`: 객체 지향적인 파일 경로 다루기](#62-pathlib-객체-지향적인-파일-경로-다루기)
 
 --- 
 
@@ -29,6 +35,8 @@
 ### 1.1 `with open(...)`을 사용한 안전한 파일 처리
 
 파일을 열고 작업한 후에는 반드시 닫아주어야 합니다. `with` 문을 사용하면 파일이 자동으로 닫히므로, 리소스 누수를 방지하고 예외 발생 시에도 안전하게 파일을 처리할 수 있습니다. 또한, 파일 관련 예외 처리를 통해 프로그램의 안정성을 높일 수 있습니다.
+
+- **`with` 문의 동작 원리:** `with` 문은 **컨텍스트 관리자(Context Manager)** 프로토콜을 따릅니다. `with` 블록에 진입할 때 객체의 `__enter__` 메서드가 호출되고, 블록을 벗어날 때(정상 종료든 예외 발생이든) `__exit__` 메서드가 호출됩니다. `__exit__` 메서드에서 파일 닫기 등의 정리 작업을 수행하므로, 개발자가 명시적으로 `close()`를 호출할 필요가 없어집니다. 파일 외에도 데이터베이스 연결, 락(lock) 획득/해제 등 리소스 관리가 필요한 다양한 상황에서 `with` 문을 활용할 수 있습니다.
 
 ```python
 # 파일 쓰기 예시
@@ -145,6 +153,14 @@ with open('people.csv', 'r', encoding='utf-8') as csvfile:
     for row in dict_reader:
         print(row['Name'], row['Age'], row['City'])
 ```
+- **Pandas를 이용한 CSV 처리 (데이터 과학 분야):**
+  데이터 과학 분야에서는 `pandas` 라이브러리의 `read_csv()` 함수가 CSV 파일을 `DataFrame` 형태로 불러오는 데 가장 널리 사용됩니다. 이는 대규모 CSV 파일을 효율적으로 처리하고, 데이터 분석 및 조작을 위한 강력한 기능을 제공합니다. `csv` 모듈은 저수준의 행 단위 처리에 적합하며, `pandas`는 고수준의 데이터프레임 기반 처리에 적합합니다.
+  ```python
+  import pandas as pd
+  # df = pd.read_csv('people.csv')
+  # print(df)
+  ```
+
 
 
 ### 2.2 JSON 데이터 처리: `json` 모듈 활용
@@ -213,7 +229,7 @@ import requests
 
 # GET 요청 보내기
 url = "https://jsonplaceholder.typicode.com/todos/1"
-response = requests.get(url)
+response = requests.get(url, timeout=5) # 5초 타임아웃 설정
 
 print(f"\nGET 요청 상태 코드: {response.status_code}")
 print(f"GET 요청 응답 내용 (JSON): {response.json()}")
@@ -221,7 +237,7 @@ print(f"GET 요청 응답 내용 (JSON): {response.json()}")
 # POST 요청 보내기
 post_url = "https://jsonplaceholder.typicode.com/posts"
 new_post = {'title': 'foo', 'body': 'bar', 'userId': 1}
-post_response = requests.post(post_url, json=new_post)
+post_response = requests.post(post_url, json=new_post, timeout=5)
 
 print(f"\nPOST 요청 상태 코드: {post_response.status_code}")
 print(f"POST 요청 응답 내용 (JSON): {post_response.json()}")
@@ -232,11 +248,19 @@ try:
     print("요청 성공!")
 except requests.exceptions.HTTPError as e:
     print(f"HTTP 에러 발생: {e}")
-except requests.exceptions.RequestException as e:
-    print(f"요청 중 에러 발생: {e}")
+except requests.exceptions.ConnectionError as e:
+    print(f"연결 에러 발생: {e}")
+except requests.exceptions.Timeout as e:
+    print(f"타임아웃 에러 발생: {e}")
+except requests.exceptions.RequestException as e: # 모든 requests 관련 에러를 포괄적으로 처리
+    print(f"요청 중 예상치 못한 에러 발생: {e}")
+```
+ - **Session 객체 사용 (여러 요청 시 효율적):**
+  `requests.Session` 객체는 여러 요청에 걸쳐 동일한 TCP 연결을 재사용하고, 쿠키, 헤더 등의 상태를 유지할 수 있게 해줍니다. 이는 특히 동일한 호스트에 반복적으로 요청을 보내는 경우 **성능 향상(연결 풀링)**과 **상태 관리(인증, 세션 유지)**에 매우 중요합니다.
+```python
+import requests
 
-# Session 객체 사용 (여러 요청 시 효율적)
-# Session 객체는 TCP 연결 재사용, 쿠키 유지 등에 유용합니다.
+# Session 객체 사용
 with requests.Session() as session:
     session.auth = ('user', 'pass') # 인증 정보 설정
     session.headers.update({'x-test': 'true'}) # 헤더 설정
@@ -257,7 +281,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def fetch_and_log(url):
     logging.info(f"API 요청 시작: {url}")
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.raise_for_status() # HTTP 에러 발생 시 예외 발생
         logging.info(f"API 요청 성공: {url}, 상태 코드: {response.status_code}")
         return response.json()
@@ -280,6 +304,8 @@ except (requests.exceptions.RequestException, requests.exceptions.HTTPError):
 - **설치:** `requests`는 내장 라이브러리가 아니므로 `pip install requests`로 설치해야 합니다.
 - **주요 메서드:** `requests.get()`, `requests.post()`, `requests.put()`, `requests.delete()` 등.
 - **응답 객체:** `response.status_code`, `response.text`, `response.json()`, `response.headers` 등 다양한 속성을 제공합니다.
+- **타임아웃 (Timeout):** `requests` 요청 시 `timeout` 매개변수를 사용하여 일정 시간 내에 응답이 없으면 예외를 발생시키도록 설정하는 것이 중요합니다. 이는 네트워크 지연 등으로 인해 프로그램이 무한정 대기하는 것을 방지합니다.
+- **포괄적인 에러 처리:** `requests.exceptions.RequestException`은 `ConnectionError`, `HTTPError`, `Timeout` 등 `requests` 라이브러리에서 발생할 수 있는 모든 예외의 기본 클래스입니다. 따라서 `except requests.exceptions.RequestException as e:`와 같이 처리하면 `requests` 관련 모든 잠재적 오류를 포괄적으로 처리할 수 있어 안정적인 코드 작성에 도움이 됩니다.
 
 ### 3.1 API Rate Limiting (요청 제한) 및 Pagination (페이지네이션)
 
@@ -345,10 +371,13 @@ def validate_user_data(user_data: dict) -> bool:
 
 복잡한 데이터 구조나 API 스키마에 대한 유효성 검사가 필요한 경우, 다음과 같은 전문 라이브러리를 활용하면 개발 효율성을 높일 수 있습니다.
 
--   **`Pydantic`:** 파이썬 타입 힌트를 사용하여 데이터 유효성 검사 및 설정을 정의할 수 있는 라이브러리입니다. 데이터 모델을 정의하면 자동으로 유효성 검사를 수행하고, JSON 직렬화/역직렬화 기능을 제공하여 FastAPI와 같은 웹 프레임워크에서 널리 사용됩니다.
+-   **`Pydantic`:** 파이썬 타입 힌트를 사용하여 데이터 유효성 검사 및 설정을 정의할 수 있는 라이브러리입니다. 데이터 모델을 정의하면 자동으로 유효성 검사를 수행하고, JSON 직렬화/역직렬화 기능을 제공하여 FastAPI와 같은 웹 프레임워크에서 API 요청/응답 데이터의 유효성 검사에 널리 사용됩니다.
 -   **`Cerberus`:** 유연하고 확장 가능한 데이터 유효성 검사 라이브러리입니다. YAML이나 JSON 스키마를 사용하여 복잡한 규칙을 정의할 수 있습니다.
 
 이러한 라이브러리들은 수동으로 유효성 검사 로직을 작성하는 것보다 훨씬 강력하고 유지보수하기 쉬운 코드를 작성할 수 있도록 돕습니다.
+
+- **스키마 정의 언어 활용:**
+  `Pydantic`이나 `Cerberus`와 같은 라이브러리 외에도, **JSON Schema**나 **OpenAPI/Swagger 스키마**와 같은 표준 스키마 정의 언어를 사용하여 데이터의 구조와 유효성 규칙을 정의할 수 있습니다. 이러한 스키마는 API 문서화, 코드 자동 생성, 그리고 런타임 유효성 검사에 활용되어 데이터 일관성을 보장하고 개발 프로세스를 자동화하는 데 큰 도움을 줍니다.
 
 ## 5. 설정 관리: 환경 변수와 `python-dotenv`
 
@@ -390,11 +419,11 @@ print(f"존재하지 않는 변수: {non_existent_var}")
 - **설치:** `python-dotenv`는 내장 라이브러리가 아니므로 `pip install python-dotenv`로 설치해야 합니다.
 - **보안:** `.env` 파일은 버전 관리 시스템(Git 등)에 포함되지 않도록 `.gitignore`에 추가하는 것이 중요합니다.
 
-## 5. 파일 시스템 제어 (`os`, `pathlib`)
+## 6. 파일 시스템 제어 (`os`, `pathlib`)
 
 파이썬은 운영체제와 상호작용하여 파일 및 디렉토리를 생성, 삭제, 이동하거나 정보를 얻는 기능을 제공합니다. `os` 모듈은 전통적인 방식이며, `pathlib` 모듈은 객체 지향적인 방식으로 경로를 다룹니다.
 
-### 5.1 `os` 모듈: 운영체제와 상호작용
+### 6.1 `os` 모듈: 운영체제와 상호작용
 
 `os` 모듈은 파일 및 디렉토리 조작, 환경 변수 접근 등 운영체제와 관련된 다양한 기능을 제공합니다.
 
@@ -433,9 +462,10 @@ print(f"결합된 경로: {combined_path}")
 # os.removedirs('parent/child') # 비어있는 하위 디렉토리까지 삭제
 # import shutil
 # shutil.rmtree(new_dir) # 비어있지 않아도 강제 삭제 (주의!)
+# shutil 모듈은 파일 및 디렉토리 복사, 이동, 삭제 등 고수준 파일 작업을 제공합니다.
 ```
 
-### 5.2 `pathlib`: 객체 지향적인 파일 경로 다루기
+### 6.2 `pathlib`: 객체 지향적인 파일 경로 다루기
 
 `pathlib` 모듈은 파이썬 3.4부터 표준 라이브러리에 포함되었으며, 파일 시스템 경로를 객체 지향적으로 다룰 수 있게 해줍니다. `os.path` 함수들을 대체하며, 더 직관적이고 파이썬스러운 코드를 작성할 수 있습니다.
 
@@ -473,6 +503,12 @@ print(f"'{new_dir_path}' 디렉토리인가? {new_dir_path.is_dir()}")
 print(f"파일 이름: {new_file_path.name}")
 print(f"확장자: {new_file_path.suffix}")
 print(f"부모 디렉토리: {new_file_path.parent}")
+
+# 절대 경로 및 심볼릭 링크 해결
+relative_path = Path("../0423정리.md") # 상대 경로
+resolved_path = relative_path.resolve()
+print(f"상대 경로: {relative_path}")
+print(f"절대 경로 (resolve): {resolved_path}")
 
 # 디렉토리 내 파일 순회 (glob)
 print("\n현재 디렉토리의 .txt 파일 목록 (glob):")
