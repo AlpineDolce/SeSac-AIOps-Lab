@@ -1,8 +1,8 @@
-<h2>실무 데이터 처리: 파일, API, 환경변수</h2>
+<h2>실무 데이터 처리: 파일, API, 환경변수 마스터하기</h2>
 작성자: Alpine_Dolce&nbsp;&nbsp;|&nbsp;&nbsp;날짜: 2025-05-12
 
 <h2>문서 목표</h2>
-<p>이 문서는 Python을 활용하여 <strong>실무 데이터를 처리하는 다양한 기법</strong>에 대해 심도 있게 다룹니다. 파일 입출력(File I/O)을 통한 로컬 데이터 관리, CSV 및 JSON과 같은 표준 데이터 형식 처리, 외부 API 연동을 통한 웹 데이터 활용, 환경 변수를 이용한 설정 관리, 그리고 파일 시스템 제어 방법을 상세한 예제와 함께 설명합니다. 이를 통해 파이썬으로 실제 데이터를 효과적으로 수집, 저장, 처리하는 능력을 기르는 것을 목표로 합니다.</p>
+<p>이 문서는 Python을 활용하여 <strong>실무 데이터를 처리하는 다양한 기법</strong>에 대해 심도 있게 다룹니다. 파일 입출력(File I/O)을 통한 로컬 데이터 관리, CSV 및 JSON과 같은 표준 데이터 형식 처리, 외부 API 연동을 통한 웹 데이터 활용, 환경 변수를 이용한 설정 관리, 그리고 파일 시스템 제어 방법을 <strong>데이터 과학 실무에 필수적인 예제와 팁</strong>과 함께 설명합니다. 이를 통해 파이썬으로 실제 데이터를 효과적으로 수집, 저장, 처리하는 능력을 기르는 것을 목표로 합니다.</p>
 
 <h2>목차</h2>
 
@@ -34,7 +34,7 @@
   - [6.1.1 `shutil` 모듈 (고수준 파일 작업)](#611-shutil-모듈-고수준-파일-작업)
   - [6.2 `pathlib`: 객체 지향적인 파일 경로 다루기](#62-pathlib-객체-지향적인-파일-경로-다루기)
 
---- 
+---
 
 ## 1. 파일 입출력 (File I/O)
 
@@ -162,7 +162,7 @@ with open('people.csv', 'r', encoding='utf-8') as csvfile:
         print(row['Name'], row['Age'], row['City'])
 ```
 - **Pandas를 이용한 CSV 처리 (데이터 과학 분야):**
-  데이터 과학 분야에서는 `pandas` 라이브러리의 `read_csv()` 함수가 CSV 파일을 `DataFrame` 형태로 불러오는 데 가장 널리 사용됩니다. 이는 대규모 CSV 파일을 효율적으로 처리하고, 데이터 분석 및 조작을 위한 강력한 기능을 제공합니다. `csv` 모듈은 저수준의 행 단위 처리에 적합하며, `pandas`는 고수준의 데이터프레임 기반 처리에 적합합니다.
+  <strong>실무 관점:</strong> 데이터 과학 분야에서는 `pandas` 라이브러리의 `read_csv()` 함수가 CSV 파일을 `DataFrame` 형태로 불러오는 데 가장 널리 사용됩니다. 이는 대규모 CSV 파일을 효율적으로 처리하고, 데이터 분석 및 조작을 위한 강력한 기능을 제공합니다. `csv` 모듈은 저수준의 행 단위 처리에 적합하며, `pandas`는 고수준의 데이터프레임 기반 처리에 적합합니다.
   ```python
   import pandas as pd
   # df = pd.read_csv('people.csv')
@@ -170,10 +170,9 @@ with open('people.csv', 'r', encoding='utf-8') as csvfile:
   ```
 
 
-
 ### 2.2 JSON 데이터 처리: `json` 모듈 활용
 
-JSON (JavaScript Object Notation)은 웹 애플리케이션에서 데이터를 교환할 때 널리 사용되는 경량 데이터 교환 형식입니다. 파이썬의 딕셔너리와 리스트는 JSON 데이터 구조와 거의 1:1로 매핑됩니다. (자세한 내용은 0428정리.md 참조)
+JSON (JavaScript Object Notation)은 웹 애플리케이션에서 데이터를 교환할 때 널리 사용되는 경량 데이터 교환 형식입니다. 파이썬의 딕셔너리와 리스트는 JSON 데이터 구조와 거의 1:1로 매핑됩니다. (자세한 내용은 [04_자료구조_매핑과_집합.md](./04_자료구조_매핑과_집합.md) 참조)
 
 ```python
 import json
@@ -372,7 +371,22 @@ def validate_user_data(user_data: dict) -> bool:
 
     # 3. 이메일 형식 검사 (간단한 정규표현식 사용)
     import re
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    if not re.match(email_pattern, user_data['email']):
+        print("오류: 유효하지 않은 이메일 형식입니다.")
+        return False
+
+    print("데이터 유효성 검사 통과.")
+    return True
+
+# 테스트
+valid_data = {'name': 'Alice', 'age': 30, 'email': 'alice@example.com'}
+invalid_data_missing_field = {'name': 'Bob', 'age': 25}
+invalid_data_age_type = {'name': 'Charlie', 'age': 'twenty', 'email': 'charlie@example.com'}
+
+validate_user_data(valid_data)
+validate_user_data(invalid_data_missing_field)
+validate_user_data(invalid_data_age_type)
 ```
 
 ### 4.4 고급 유효성 검사 라이브러리
@@ -534,25 +548,3 @@ for item in current_path.iterdir():
 ```
 
 - **권장 사항:** 현대 파이썬 개발에서는 `pathlib` 모듈을 사용하는 것이 더 파이썬스럽고, 객체 지향적인 접근 방식으로 인해 코드의 가독성과 유지보수성이 향상됩니다.
-```python
-    if not re.match(email_pattern, user_data['email']):
-        print("오류: 유효하지 않은 이메일 형식입니다.")
-        return False
-
-    print("데이터 유효성 검사 통과.")
-    return True
-
-# 테스트
-valid_data = {'name': 'Alice', 'age': 30, 'email': 'alice@example.com'}
-invalid_data_missing_field = {'name': 'Bob', 'age': 25}
-invalid_data_age_type = {'name': 'Charlie', 'age': 'twenty', 'email': 'charlie@example.com'}
-
-validate_user_data(valid_data)
-validate_user_data(invalid_data_missing_field)
-validate_user_data(invalid_data_age_type)
-```
-
-
-
-
-
