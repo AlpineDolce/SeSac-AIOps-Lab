@@ -126,6 +126,7 @@ dependencies:
       - wordcloud>=1.9.0
       - gensim>=4.3.0
       - textblob>=0.17.1
+      - korpora>=0.2.0
 
       # === KOREAN NLP (requires Java) ===
       - konlpy>=0.6.0

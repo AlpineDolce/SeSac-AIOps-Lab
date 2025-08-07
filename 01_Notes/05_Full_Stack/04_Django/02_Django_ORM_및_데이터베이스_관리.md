@@ -1,4 +1,4 @@
-<h2>Django Backend (0626)</h2>
+<h2>Django Backend: ORM 및 데이터베이스 관리</h2>
 작성자: Alpine_Dolce&nbsp;&nbsp;|&nbsp;&nbsp;날짜: 2025-07-04
 
 <h2>문서 목표</h2>

@@ -1,4 +1,4 @@
-<h2>Django Backend (0625)</h2>
+<h2>Django Backend: 프로젝트 설정 및 URL 라우팅</h2>
 작성자: Alpine_Dolce&nbsp;&nbsp;|&nbsp;&nbsp;날짜: 2025-07-04
 
 <h2>문서 목표</h2>
@@ -11,13 +11,13 @@
   - [1.2. 프로젝트 디렉토리 구조](#12-프로젝트-디렉토리-구조)
 - [2. Django 앱 생성 및 등록](#2-django-앱-생성-및-등록)
   - [2.1. 앱 생성 (`python manage.py startapp`)](#21-앱-생성-python-managepy-startapp)
-  - [2.2. 앱 등록 (INSTALLED\_APPS)](#22-앱-등록-installed_apps)
+  - [2.2. 앱 등록 (INSTALLED_APPS)](#22-앱-등록-installed_apps)
 - [3. Django 설정 (settings.py)](#3-django-설정-settingspy)
-  - [3.1. SECRET\_KEY, DEBUG, ALLOWED\_HOSTS](#31-secret_key-debug-allowed_hosts)
+  - [3.1. SECRET_KEY, DEBUG, ALLOWED_HOSTS](#31-secret_key-debug-allowed_hosts)
     - [3.1.1. 민감한 설정 관리 (환경 변수)](#311-민감한-설정-관리-환경-변수)
-  - [3.2. INSTALLED\_APPS, MIDDLEWARE](#32-installed_apps-middleware)
+  - [3.2. INSTALLED_APPS, MIDDLEWARE](#32-installed_apps-middleware)
   - [3.3. TEMPLATES, DATABASES](#33-templates-databases)
-  - [3.4. STATIC\_URL](#34-static_url)
+  - [3.4. STATIC_URL](#34-static_url)
   - [3.5. 로깅 설정 (Logging Configuration)](#35-로깅-설정-logging-configuration)
 - [4. URL 라우팅 (urls.py)](#4-url-라우팅-urlspy)
   - [4.1. 프로젝트 `urls.py` 설정](#41-프로젝트-urlspy-설정)
@@ -106,8 +106,8 @@ python manage.py startapp <app_name>
 
 **예시:**
 ```bash
-python manage.py startapp blog
-python manage.py startapp score
+django-admin startapp blog
+django-admin startapp score
 django-admin startapp board # 장고사이트구축방법.txt 참고
 ```
 
@@ -154,7 +154,7 @@ INSTALLED_APPS = [
 *   **`DEBUG`**: 개발 모드 여부를 결정합니다. `True`로 설정하면 상세한 오류 페이지를 볼 수 있어 개발에 유용하지만, **운영 환경에서는 반드시 `False`로 설정**해야 합니다.
 *   **`ALLOWED_HOSTS`**: `DEBUG`가 `False`일 때, Django 서버가 응답할 수 있는 호스트/도메인 이름을 정의합니다. 보안을 위해 사용됩니다.
 
-**예시 (`myhome1/config/settings.py`):**
+**예시 (`myhome1/config/settings.py`):
 ```python
 SECRET_KEY = "django-insecure-=(lhtns0^4!%w^$s!mca0d)f)+91e=a+dymuv9dl%72#ko!i-z"
 DEBUG = True
@@ -220,7 +220,7 @@ ALLOWED_HOSTS = [] # 개발 시에는 비워두거나 'localhost', '127.0.0.1' �
 *   **`INSTALLED_APPS`**: 위에서 설명했듯이, 프로젝트에 포함된 모든 Django 앱(기본 앱 및 사용자 정의 앱)을 나열합니다.
 *   **`MIDDLEWARE`**: 요청과 응답 처리 과정에서 전역적으로 동작하는 미들웨어 클래스들을 정의합니다. 보안, 세션 관리, CSRF 보호 등 다양한 기능을 수행합니다.
 
-**예시 (`myhome1/config/settings.py` 또는 `mysite1/config/settings.py`):**
+**예시 (`myhome1/config/settings.py` 또는 `mysite1/config/settings.py`):
 ```python
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -238,7 +238,7 @@ MIDDLEWARE = [
     *   `APP_DIRS: True`는 각 앱의 `templates/` 디렉토리에서 템플릿을 찾도록 합니다.
     *   `DIRS`에 프로젝트 루트의 `templates` 폴더를 추가하여 모든 앱에서 공통으로 사용할 템플릿을 관리할 수 있습니다.
 
-**예시 (`myhome1/config/settings.py` 또는 `mysite1/config/settings.py`):**
+**예시 (`myhome1/config/settings.py` 또는 `mysite1/config/settings.py`):
 ```python
 import os # os 모듈 임포트
 
@@ -260,7 +260,7 @@ TEMPLATES = [
 
 *   **`DATABASES`**: 프로젝트에서 사용할 데이터베이스 연결 설정을 정의합니다.
 
-**예시 (`myhome1/config/settings.py` - MySQL 설정):**
+**예시 (`myhome1/config/settings.py` - MySQL 설정):
 ```python
 DATABASES = {
     'default': {
@@ -273,7 +273,7 @@ DATABASES = {
     }
 }
 ```
-**예시 (`myhome2/myhome2/settings.py` - SQLite 설정):**
+**예시 (`myhome2/myhome2/settings.py` - SQLite 설정):
 ```python
 DATABASES = {
     "default": {
@@ -286,7 +286,7 @@ DATABASES = {
 ### 3.4. STATIC_URL
 *   **`STATIC_URL`**: 정적 파일(CSS, JavaScript, 이미지 등)에 접근할 때 사용할 URL 접두사를 정의합니다. 개발 서버에서 정적 파일을 제공하는 데 사용됩니다.
 
-**예시 (`myhome1/config/settings.py`):**
+**예시 (`myhome1/config/settings.py`):
 ```python
 STATIC_URL = "static/"
 ```
@@ -399,7 +399,7 @@ Django는 `urls.py` 파일을 통해 URL 요청을 적절한 뷰 함수로 연�
 ### 4.1. 프로젝트 `urls.py` 설정
 프로젝트의 최상위 `urls.py` 파일은 모든 URL 요청을 받아서 각 앱의 `urls.py`로 분배하는 역할을 합니다. `include()` 함수를 사용하여 다른 `urls.py` 파일을 포함시킬 수 있습니다.
 
-**예시 (`myhome1/config/urls.py` 또는 `mysite1/config/urls.py`):**
+**예시 (`myhome1/config/urls.py` 또는 `mysite1/config/urls.py`):
 ```python
 from django.contrib import admin
 from django.urls import path, include # include 임포트
@@ -424,7 +424,7 @@ urlpatterns = [
     *   `name`: URL 패턴에 이름을 부여하여 템플릿 등에서 쉽게 참조할 수 있도록 합니다. (예: `{% url 'blog:list' %}`)
 *   **`app_name`**: 앱의 네임스페이스를 정의합니다. 여러 앱에서 동일한 `name`을 가진 URL 패턴이 있을 때 충돌을 방지합니다.
 
-**예시 (`myhome1/blog/urls.py`):**
+**예시 (`myhome1/blog/urls.py`):
 ```python
 from django.urls import path
 from . import views # 현재 앱의 views.py 임포트
@@ -439,7 +439,7 @@ urlpatterns = [
     path("save", views.save)
 ]
 ```
-**예시 (`mysite1/guestbook/urls.py` - 다양한 URL 패턴):**
+**예시 (`mysite1/guestbook/urls.py` - 다양한 URL 패턴):
 ```python
 from django.urls import path
 from . import views
@@ -454,7 +454,7 @@ urlpatterns = [
     # ...
 ]
 ```
-**예시 (`장고사이트구축방법.txt`의 `urls.py` 파일 만들기 섹션 참고):**
+**예시 (`장고사이트구축방법.txt`의 `urls.py` 파일 만들기 섹션 참고):
 ```python
 # board/urls.py (가상)
 from django.contrib import admin
