@@ -140,7 +140,7 @@ finally:
     conn.close()
 ```
 
-### 1.3. (중요) SQL Injection 방지를 위한 파라미터화
+### 1.3. SQL Injection 방지를 위한 파라미터화
 
 사용자 입력을 직접 SQL 쿼리 문자열에 삽입하는 것은 **SQL Injection** 공격에 취약합니다. `pymysql`과 같은 DB-API 드라이버는 쿼리 파라미터화(Parameterized Queries)를 지원하여 이를 방지합니다. **절대 문자열 포매팅(f-string, `%`)으로 SQL 쿼리를 만들지 마십시오.**
 
@@ -230,7 +230,7 @@ Pandas는 파이썬 데이터 분석의 핵심 라이브러리이며, SQL 데이
 
 `pandas.read_sql()` 함수는 SQL 쿼리의 결과를 직접 Pandas DataFrame으로 로드합니다. `read_sql_query`와 `read_sql_table`의 기능을 통합한 함수입니다.
 
-**대용량 데이터 조회 시 메모리 문제와 `chunksize` 활용 (실무 필수):**
+**대용량 데이터 조회 시 메모리 문제와 `chunksize` 활용:**
 `pd.read_sql`은 기본적으로 쿼리의 모든 결과를 메모리로 불러옵니다. 만약 수백만, 수천만 건의 대용량 데이터를 한 번에 조회하면 **메모리 부족(Out of Memory) 오류**가 발생하거나, 시스템 전체의 성능 저하를 유발할 수 있습니다. 이때 `chunksize` 파라미터를 사용하면 데이터를 지정된 크기의 덩어리(chunk)로 나누어 처리할 수 있습니다. 이 방식은 메모리 사용량을 크게 줄여주어 대용량 데이터 처리 시 필수적인 기법입니다.
 
 ```python

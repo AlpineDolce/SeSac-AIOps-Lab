@@ -186,7 +186,7 @@ CROSS JOIN
         salary_grades sg ON e.salary BETWEEN sg.min_salary AND sg.max_salary;
     ```
 
-    **성능 고려사항 및 대안 (실무적 관점):**
+    **성능 고려사항 및 대안:**
     비등가 조인은 강력한 기능이지만, 등가 조인에 비해 성능상 불리한 경우가 많습니다. 특히 `BETWEEN`이나 범위 조건(`>`, `<`)을 사용하는 비등가 조인은 인덱스를 효율적으로 활용하기 어렵거나, 아예 사용하지 못하여 Full Table Scan을 유발할 수 있습니다. 대규모 데이터셋에서는 쿼리 성능에 심각한 영향을 미칠 수 있으므로 주의해야 합니다.
 
     *   **성능 저하 원인:**
@@ -247,7 +247,7 @@ FROM employees e
 LEFT JOIN departments d ON e.department_id = d.department_id OR e.department_id IS NULL;
 ```
 
-*   **`JOIN` 컬럼의 데이터 타입 일치 (매우 중요!):**
+*   **`JOIN` 컬럼의 데이터 타입 일치 :**
     `JOIN` 조건으로 사용되는 컬럼들의 데이터 타입은 반드시 일치해야 합니다. 만약 데이터 타입이 다르면, 데이터베이스는 내부적으로 암시적 형변환(Implicit Type Conversion)을 시도합니다. 이 과정에서 다음과 같은 문제가 발생할 수 있습니다.
     *   **인덱스 사용 불가:** 형변환이 발생하면 해당 컬럼에 생성된 인덱스를 사용할 수 없게 되어 Full Table Scan이 발생하고 쿼리 성능이 심각하게 저하됩니다.
     *   **성능 오버헤드:** 형변환 자체에도 CPU 자원이 소모됩니다.
@@ -323,7 +323,7 @@ INNER JOIN departments d USING (department_id);
 -- INNER JOIN departments d ON e.department_id = d.department_id;
 ```
 
-### 1.9. `NATURAL JOIN` (참고)
+### 1.9. `NATURAL JOIN`
 
 `NATURAL JOIN`은 두 테이블에서 이름과 데이터 타입이 동일한 모든 컬럼을 자동으로 찾아 `JOIN` 조건으로 사용합니다. `ON` 절이나 `USING` 절을 명시할 필요가 없어 매우 간결합니다.
 
