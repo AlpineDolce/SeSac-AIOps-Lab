@@ -1,2 +1,22 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# ==============================
+# Python & Jupyter Notebook
+# ==============================
+*.py     text diff=python
+*.ipynb  text linguist-language=Jupyter\ Notebook
+
+# ==============================
+# HTML - 대용량 diff 방지 & export 제외
+# ==============================
+*.html -text -diff export-ignore linguist-generated
+
+# ==============================
+# OS별 불필요 파일 무시 (텍스트 처리 비활성화)
+# ==============================
+*.DS_Store -text
+Thumbs.db   -text
+
+# ==============================
+# Ensure UTF-8 LF line endings for code
+# ==============================
+*.py text eol=lf
+*.ipynb text eol=lf
