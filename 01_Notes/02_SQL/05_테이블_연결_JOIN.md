@@ -45,6 +45,29 @@
 
 따라서, 분석 쿼리 작성 시에는 분석의 기준이 되는 핵심 테이블(Fact Table 또는 Primary Entity)을 `FROM` 절에 먼저 두고, 필요한 추가 정보가 담긴 테이블들을 `LEFT JOIN`으로 연결해 나가는 것을 기본 전략으로 삼는 것이 가장 안전하고 권장됩니다. 이렇게 하면 기준 데이터의 유실 없이 안정적으로 분석을 진행할 수 있으며, 매칭되지 않는 데이터(오른쪽 테이블의 컬럼이 `NULL`로 표시됨)를 통해 데이터의 누락이나 불일치 여부를 쉽게 파악하고 추가적인 데이터 품질 검증이나 분석 방향을 설정할 수 있습니다.
 
+| JOIN 유형 | 선택되는 데이터 (벤 다이어그램 관점) | 주요 용도 | 비고 |
+| :--- | :--- | :--- | :--- |
+| **`INNER JOIN`** | 두 테이블에 공통으로 존재하는 행 (교집합: A ∩ B) | 매칭되는 데이터만 필요할 때 (예: 주문이 있는 고객) | 가장 기본적이고 흔하게 사용됨. |
+| **`LEFT JOIN`** | 왼쪽 테이블의 모든 행 + 오른쪽 테이블의 매칭되는 행 (A 전체) | 기준 테이블의 데이터를 모두 유지할 때 (예: 모든 고객의 주문 내역, 없으면 NULL) | 데이터 누락 방지에 필수적. `ANTI JOIN` 패턴으로 활용 가능. |
+| **`RIGHT JOIN`** | 오른쪽 테이블의 모든 행 + 왼쪽 테이블의 매칭되는 행 (B 전체) | `LEFT JOIN`과 동일하나 기준 테이블이 오른쪽에 위치. | 가독성을 위해 `LEFT JOIN`으로 통일하는 것을 권장. |
+| **`FULL OUTER JOIN`** | 양쪽 테이블의 모든 행 (합집합: A ∪ B) | 두 데이터셋의 전체 목록을 비교할 때 (예: 올해 고객 vs 작년 고객) | MySQL 미지원. `LEFT JOIN` + `UNION` + `RIGHT JOIN`으로 구현. |
+| **`CROSS JOIN`** | 두 테이블의 모든 가능한 행의 조합 (데카르트 곱) | 분석을 위한 기준 데이터 생성, 대량 테스트 데이터 생성 | `WHERE` 절이 없으면 의도치 않은 대규모 결과가 나올 수 있어 주의. |
+| **`SELF JOIN`** | 동일 테이블 내에서 조건을 만족하는 행들의 조합 | 계층 구조 분석 (예: 직원-상사), 동일 테이블 내 데이터 비교 | 반드시 테이블 별칭(Alias) 사용 필요. |
+
+- **다뤄볼 테이블**
+
+    ```plaintext
+    Employee Table                                 Department Table
+
+    | EmployeeID | EmployeeName | DepartmentID |   | DepartmentID | DepartmentName |
+    |------------|--------------|--------------|   |--------------|----------------|
+    | 1          | John         | 1            |   | 1            | Sales          |
+    | 2          | Jane         | 2            |   | 2            | Marketing      |
+    | 3          | Mark         | 3            |   | 3            | HR             |
+    | 4          | Emily        | 1            |   | 4            | IT             |
+    | 5          | Brian        | 4            |   | 6            | Operations     |
+    ```
+
 ### 1.2. `INNER JOIN`: 교집합 데이터 추출
 
 `INNER JOIN`은 두 테이블에서 `JOIN` 조건에 맞는 로우만 반환합니다. 즉, 두 테이블에 모두 존재하는 데이터의 교집합을 가져옵니다. 가장 일반적으로 사용되는 `JOIN` 유형입니다.
@@ -52,18 +75,21 @@
 ```sql
 -- 직원(employees)과 부서(departments) 테이블을 department_id로 연결하여 직원 이름과 부서명 조회
 -- (부서에 소속된 직원, 직원이 소속된 부서만 조회)
-SELECT
-    e.first_name, e.last_name,
-    d.department_name
-FROM
-    employees e
-INNER JOIN
-    departments d ON e.department_id = d.department_id;
-
+SELECT e.EmployeeID, e.EmployeeName, d.DepartmentName
+FROM Employee e
+INNER JOIN Department d ON e.DepartmentID = d.DepartmentID;
 -- AS 키워드를 사용하여 테이블 별칭(Alias)을 지정하면 쿼리 가독성이 높아집니다.
 -- ON 절에 JOIN 조건을 명시합니다.
 ```
-
+- **INNER JOIN으로 합친 결과**
+    ```plaintext
+    | EmployeeID | EmployeeName | DepartmentName |
+    | ---------- | ------------ | -------------- |
+    | 1          | John         | Sales          |
+    | 2          | Jane         | Marketing      |
+    | 3          | Mark         | HR             |
+    | 4          | Emily        | Sales          |
+    ```
 **실무 활용 시나리오:**
 *   **매칭되는 데이터만 필요할 때:** 예를 들어, 주문이 발생한 상품의 정보만 필요하거나, 특정 부서에 소속된 직원들의 정보만 필요할 때 사용합니다.
 *   **데이터 유효성 검사:** 두 테이블 간의 관계가 항상 유효한지 확인할 때 (예: 모든 주문에 유효한 고객 ID가 있는지).
@@ -79,25 +105,30 @@ INNER JOIN
 
 ```sql
 -- 모든 직원과 해당 부서명 조회. 부서가 없는 직원도 포함.
-SELECT
-    e.first_name, e.last_name,
-    d.department_name
-FROM
-    employees e
-LEFT JOIN
-    departments d ON e.department_id = d.department_id;
+SELECT e.EmployeeID, e.EmployeeName, d.DepartmentName
+FROM Employee e
+LEFT JOIN Department d ON e.DepartmentID = d.DepartmentID;
 ```
-
+- **LEFT JOIN으로 합친 결과**
+    ```plaintext
+    | EmployeeID | EmployeeName | DepartmentName |
+    | ---------- | ------------ | -------------- |
+    | 1          | John         | Sales          |
+    | 2          | Jane         | Marketing      |
+    | 3          | Mark         | HR             |
+    | 4          | Emily        | Sales          |
+    | 5          | Brian        | NULL           |
+    ```
 **실무 활용 시나리오:**
 *   **기준 데이터의 누락 방지:** 모든 고객의 구매 이력을 분석할 때, 구매 이력이 없는 고객도 결과에 포함시켜야 할 경우 (고객 테이블 `LEFT JOIN` 주문 테이블).
 *   **매칭되지 않는 데이터 찾기 (`ANTI JOIN` 패턴):** `LEFT JOIN` 후 오른쪽 테이블의 컬럼이 `IS NULL`인 조건을 추가하여, 왼쪽 테이블에는 있지만 오른쪽 테이블에는 없는 데이터를 찾을 수 있습니다. (예: 아직 주문하지 않은 고객 목록, 프로젝트에 배정되지 않은 직원 목록)
-    ```sql
-    -- 아직 주문하지 않은 고객 목록 조회
-    SELECT c.customer_name
-    FROM customers c
-    LEFT JOIN orders o ON c.customer_id = o.customer_id
-    WHERE o.order_id IS NULL;
-    ```
+```sql
+-- 아직 주문하지 않은 고객 목록 조회
+SELECT c.customer_name
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_id IS NULL;
+```
 
 #### 1.3.2. `RIGHT JOIN` (또는 `RIGHT OUTER JOIN`): 오른쪽 테이블 기준
 
@@ -106,15 +137,21 @@ LEFT JOIN
 
 ```sql
 -- 모든 부서와 해당 부서에 속한 직원명 조회. 직원이 없는 부서도 포함.
-SELECT
-    d.department_name,
-    e.first_name, e.last_name
-FROM
-    employees e
-RIGHT JOIN
-    departments d ON e.department_id = d.department_id;
+SELECT e.EmployeeID, e.EmployeeName, d.DepartmentName
+FROM Employee e
+RIGHT JOIN Department d ON e.DepartmentID = d.DepartmentID;
 ```
-
+- **RIGHT JOIN으로 합친 결과**
+    ```plaintext
+    | EmployeeID | EmployeeName | DepartmentName |
+    | ---------- | ------------ | -------------- |
+    | 1          | John         | Sales          |
+    | 2          | Jane         | Marketing      |
+    | 3          | Mark         | HR             |
+    | 4          | Emily        | Sales          |
+    | NULL       | NULL         | IT             |
+    | NULL       | NULL         | Operations     |
+    ```
 **실무 활용 시나리오:**
 *   `LEFT JOIN`과 동일한 목적이지만, 쿼리 작성 시 기준 테이블을 오른쪽에 두는 경우에 사용합니다. (예: 모든 상품의 판매 현황을 볼 때, 아직 판매되지 않은 상품도 포함)
 
@@ -123,28 +160,23 @@ RIGHT JOIN
 `FULL OUTER JOIN`은 양쪽 테이블의 모든 로우를 포함합니다. `JOIN` 조건에 맞는 로우는 연결하고, 맞지 않는 로우는 다른 테이블의 컬럼을 `NULL`로 채워 반환합니다. MySQL은 `FULL OUTER JOIN`을 직접 지원하지 않으므로, `LEFT JOIN`과 `RIGHT JOIN`의 결과를 `UNION ALL`하여 구현합니다.
 
 ```sql
--- 직원과 부서 정보를 모두 포함 (매칭되지 않는 직원/부서도 포함)
-SELECT
-    e.first_name, e.last_name,
-    d.department_name
-FROM
-    employees e
-LEFT JOIN
-    departments d ON e.department_id = d.department_id
-
-UNION ALL -- UNION 대신 UNION ALL 사용
-
-SELECT
-    e.first_name, e.last_name,
-    d.department_name
-FROM
-    employees e
-RIGHT JOIN
-    departments d ON e.department_id = d.department_id
-WHERE
-    e.employee_id IS NULL; -- LEFT JOIN 결과에 없는 RIGHT JOIN의 고유 로우만 추가
+-- MySQL 미지원
+SELECT e.EmployeeID, e.EmployeeName, d.DepartmentName
+FROM Employee e
+FULL OUTER JOIN Department d ON e.DepartmentID = d.DepartmentID;
 ```
-
+- **FULL OUTER JOIN으로 합친 결과**
+    ```plaintext
+    | EmployeeID | EmployeeName | DepartmentName |
+    | ---------- | ------------ | -------------- |
+    | 1          | John         | Sales          |
+    | 2          | Jane         | Marketing      |
+    | 3          | Mark         | HR             |
+    | 4          | Emily        | Sales          |
+    | 5          | Brian        | NULL           |
+    | NULL       | NULL         | IT             |
+    | NULL       | NULL         | Operations     |
+    ```
 **실무 팁: `FULL OUTER JOIN` 구현 시 `UNION` vs `UNION ALL`**
 `FULL OUTER JOIN`을 `LEFT JOIN`과 `RIGHT JOIN`의 `UNION`으로 구현할 때, `UNION ALL`과 `WHERE IS NULL` 조합을 사용하는 것이 중복 제거 오버헤드를 피할 수 있어 더 효율적입니다. `UNION`은 중복 제거 과정에서 추가적인 정렬 작업을 수행하므로 성능에 불리할 수 있습니다.
 
@@ -157,15 +189,40 @@ WHERE
 
 ```sql
 -- 직원과 프로젝트의 모든 가능한 조합 조회 (의미 없는 조합이 많을 수 있음)
-SELECT
-    e.first_name, e.last_name,
-    p.project_name
-FROM
-    employees e
-CROSS JOIN
-    projects p;
+SELECT e.EmployeeID, e.EmployeeName, d.DepartmentName
+FROM Employee e
+CROSS JOIN Department d;
 ```
-
+- **CROSS JOIN으로 합친 결과**
+    ```plaintext
+    | EmployeeID | EmployeeName | DepartmentName |
+    | ---------- | ------------ | -------------- |
+    | 1          | John         | Sales          |
+    | 1          | John         | Marketing      |
+    | 1          | John         | HR             |
+    | 1          | John         | IT             |
+    | 1          | John         | Operations     |
+    | 2          | Jane         | Sales          |
+    | 2          | Jane         | Marketing      |
+    | 2          | Jane         | HR             |
+    | 2          | Jane         | IT             |
+    | 2          | Jane         | Operations     |
+    | 3          | Mark         | Sales          |
+    | 3          | Mark         | Marketing      |
+    | 3          | Mark         | HR             |
+    | 3          | Mark         | IT             |
+    | 3          | Mark         | Operations     |
+    | 4          | Emily        | Sales          |
+    | 4          | Emily        | Marketing      |
+    | 4          | Emily        | HR             |
+    | 4          | Emily        | IT             |
+    | 4          | Emily        | Operations     |
+    | 5          | Brian        | Sales          |
+    | 5          | Brian        | Marketing      |
+    | 5          | Brian        | HR             |
+    | 5          | Brian        | IT             |
+    | 5          | Brian        | Operations     |
+    ```
 **실무 활용 시나리오:**
 *   **기준 데이터 생성:** 특정 기간의 모든 날짜와 모든 상품의 조합을 생성하여, 판매 데이터가 없는 날짜/상품 조합에도 0을 채워 넣는 등 분석을 위한 기준 데이터를 만들 때 사용합니다.
 *   **테스트 데이터 생성:** 대량의 테스트 데이터를 생성할 때 유용합니다.
@@ -178,15 +235,18 @@ CROSS JOIN
 ```sql
 -- 직원 테이블에서 직원과 해당 직원의 상사 이름 조회
 -- (employees 테이블에 manager_id 컬럼이 있고, employee_id를 참조한다고 가정)
-SELECT
-    e.first_name AS employee_name,
-    m.first_name AS manager_name
-FROM
-    employees e
-LEFT JOIN -- 상사가 없는 직원도 포함하기 위해 LEFT JOIN 사용
-    employees m ON e.manager_id = m.employee_id;
+SELECT e1.EmployeeID AS Employee1_ID, e1.EmployeeName AS Employee1_Name, 
+       e2.EmployeeID AS Employee2_ID, e2.EmployeeName AS Employee2_Name
+FROM Employee e1
+INNER JOIN Employee e2 ON e1.DepartmentID = e2.DepartmentID
+WHERE e1.EmployeeID < e2.EmployeeID;
 ```
-
+- **SELF JOIN으로 합친 결과**
+    ```plaintext
+    | Employee1_ID | Employee1_Name | Employee2_ID | Employee2_Name |
+    | ------------ | -------------- | ------------ | -------------- |
+    | 1            | John           | 4            | Emily          |
+    ```
 **실무 활용 시나리오:**
 *   **계층 구조 분석:** 조직도, 카테고리 트리 등 계층적 데이터를 분석할 때 (예: 부모-자식 관계, 상사-부하 직원 관계).
 *   **동일 테이블 내 비교:** 같은 테이블 내에서 특정 조건에 맞는 로우들을 비교할 때 (예: 같은 부서 내에서 급여가 높은 직원 찾기, 동일 상품을 구매한 고객 찾기).
@@ -197,16 +257,20 @@ LEFT JOIN -- 상사가 없는 직원도 포함하기 위해 LEFT JOIN 사용
 
 ```sql
 -- 각 직원의 급여가 어떤 등급에 속하는지 조회 (salary_grades 테이블과 비등가 조인)
-SELECT
-    e.first_name,
-    e.salary,
-    sg.grade
-FROM
-    employees e
-JOIN
-    salary_grades sg ON e.salary BETWEEN sg.min_salary AND sg.max_salary;
+SELECT e.EmployeeID, e.EmployeeName, d.DepartmentName
+FROM Employee e
+JOIN Department d ON e.EmployeeID != d.DepartmentID;
 ```
-
+- **Non-Equi JOIN으로 합친 결과**
+    ```plaintext
+    | EmployeeID | EmployeeName | DepartmentName |
+    | ---------- | ------------ | -------------- |
+    | 1          | John         | Marketing      |
+    | 2          | Jane         | Sales          |
+    | 3          | Mark         | Sales          |
+    | 4          | Emily        | HR             |
+    | 5          | Brian        | HR             |
+    ```
 **실무 활용 시나리오:**
 *   **등급/구간 분류:** 점수, 급여, 연령 등을 특정 구간이나 등급으로 분류할 때 (예: 고객의 연령대에 따른 마케팅 캠페인 분류).
 *   **시간 기반 매칭:** 특정 이벤트가 발생한 시간 범위 내의 다른 이벤트를 찾을 때 (예: 로그인 기록과 구매 기록을 시간 범위로 연결).
@@ -276,14 +340,44 @@ NATURAL JOIN departments d;
 
 `UNION`과 `UNION ALL`은 두 개 이상의 `SELECT` 문의 결과를 하나의 결과 집합으로 결합할 때 사용합니다. `JOIN`이 컬럼을 옆으로 연결하는 (수평적 결합) 반면, `UNION`은 로우를 아래로 연결하는 (수직적 결합) 방식입니다.
 
-**실무적 관점:** 서로 다른 테이블에 저장된 유사한 구조의 데이터를 통합하거나, 여러 기간의 데이터를 합쳐 분석할 때 매우 유용합니다. 특히 데이터 웨어하우스에서 여러 소스의 데이터를 통합하여 리포팅할 때 필수적으로 사용됩니다.
-
-### 2.1. `UNION` vs `UNION ALL`: 중복 처리와 성능
-
 두 연산자 모두 `SELECT` 문의 결과를 결합하지만, 중복된 로우를 처리하는 방식에서 큰 차이가 있습니다.
 
+**실무적 관점:** 서로 다른 테이블에 저장된 유사한 구조의 데이터를 통합하거나, 여러 기간의 데이터를 합쳐 분석할 때 매우 유용합니다. 특히 데이터 웨어하우스에서 여러 소스의 데이터를 통합하여 리포팅할 때 필수적으로 사용됩니다.
+
+- **다뤄볼 테이블**
+    ```plaintext
+    sales_2022             sales_2023
+
+    | ProductID | Amount | | ProductID | Amount | 
+    |-----------|--------| |-----------|--------|
+    | 1         | 100    | | 1         | 100    |
+    | 2         | 200    | | 3         | 200    |
+    | 3         | 300    | | 5         | 300    |
+    | 4         | 400    | | 6         | 400    |
+    ```
+
+### 2.1. `UNION`
+
 *   **`UNION`:** 두 `SELECT` 문의 결과를 결합하고, **중복된 로우를 자동으로 제거**합니다. 중복 제거를 위해 내부적으로 정렬(Sort) 작업을 수행하므로 `UNION ALL`보다 성능상 불리할 수 있습니다.
-*   **`UNION ALL`:** 두 `SELECT` 문의 결과를 결합하고, **중복된 로우를 제거하지 않고 모두 포함**합니다. 중복 제거 과정이 없으므로 `UNION`보다 빠르고 효율적입니다.
+
+
+```sql
+-- UNION: 중복 제거 (product_id와 amount가 모두 동일한 로우는 하나만 남음)
+SELECT product_id, amount FROM sales_2022
+UNION
+SELECT product_id, amount FROM sales_2023;
+```
+- **UNION 으로 합친 결과**
+    ```plaintext
+    | ProductID | Amount |
+    |-----------|--------|
+    | 1         | 100    |
+    | 2         | 200    |
+    | 3         | 300    |
+    | 4         | 400    |
+    | 5         | 500    |
+    | 6         | 600    |
+    ```
 
 **필수 주의사항: `UNION` 연산의 조건**
 `UNION` 연산에 참여하는 `SELECT` 문들은 다음 조건을 **반드시** 만족해야 합니다.
@@ -291,25 +385,36 @@ NATURAL JOIN departments d;
 *   각 컬럼의 **데이터 타입**이 호환 가능해야 합니다. (예: `INT`와 `DECIMAL`은 호환되지만, `INT`와 `VARCHAR`는 호환되지 않을 수 있음)
 *   컬럼의 **순서**가 일치해야 합니다. (첫 번째 `SELECT` 문의 컬럼 순서가 기준이 됩니다.)
 
-```sql
--- 예시: 두 개의 가상 테이블 (sales_2022, sales_2023)이 있다고 가정
--- UNION: 중복 제거 (product_id와 amount가 모두 동일한 로우는 하나만 남음)
-SELECT product_id, amount FROM sales_2022
-UNION
-SELECT product_id, amount FROM sales_2023;
+### 2.2. `UNION ALL`
 
+*   **`UNION ALL`:** 두 `SELECT` 문의 결과를 결합하고, **중복된 로우를 제거하지 않고 모두 포함**합니다. 중복 제거 과정이 없으므로 `UNION`보다 빠르고 효율적입니다.
+
+```sql
 -- UNION ALL: 중복 포함 (product_id와 amount가 모두 동일한 로우도 모두 포함)
 SELECT product_id, amount FROM sales_2022
 UNION ALL
 SELECT product_id, amount FROM sales_2023;
 ```
+- **UNION ALL 으로 합친 결과**
+    ```plaintext
+    | ProductID | Amount |
+    |-----------|--------|
+    | 1         | 100    |
+    | 2         | 200    |
+    | 3         | 300    |
+    | 4         | 400    |
+    | 1         | 100    |
+    | 3         | 300    |
+    | 5         | 500    |
+    | 6         | 600    |
+    ```
 
 **실무 팁: `UNION` vs `UNION ALL` 선택 기준**
 *   **성능이 중요하고 중복 허용 시:** `UNION ALL`을 사용합니다. 대부분의 데이터 분석 시나리오에서는 중복을 제거할 필요가 없거나, 애플리케이션 레벨에서 처리하는 것이 더 효율적일 수 있습니다.
 *   **정확히 고유한 로우만 필요할 때:** `UNION`을 사용합니다. 하지만 대규모 데이터셋에서는 성능 저하를 인지하고 사용해야 합니다.
 *   **`ORDER BY` 적용:** `UNION` 또는 `UNION ALL`로 결합된 결과에 `ORDER BY`를 적용할 때는 마지막 `SELECT` 문 뒤에 한 번만 작성합니다. 이때 `ORDER BY`는 첫 번째 `SELECT` 문의 컬럼 이름이나 별칭을 사용해야 합니다.
 
-### 2.2. 복잡한 `UNION` 활용: 다양한 데이터 통합 시나리오
+### 2.3. 복잡한 `UNION` 활용: 다양한 데이터 통합 시나리오
 
 `UNION`은 서로 다른 구조의 데이터를 통합하거나, 여러 소스에서 가져온 데이터를 하나의 보고서 형태로 만들 때 유용합니다.
 
@@ -340,13 +445,27 @@ ORDER BY event_time;
 *   **증분 로딩 (Incremental Loading):** 매일 또는 매시간 발생하는 새로운 데이터를 기존 데이터에 `UNION ALL`로 추가하여 데이터 웨어하우스를 업데이트하는 데 사용됩니다.
 *   **데이터 정규화 및 표준화:** 여러 시스템에서 수집된 비표준화된 데이터를 `UNION`하기 전에 `CAST`, `REPLACE`, `CASE` 등의 함수를 사용하여 데이터 타입을 맞추고 값을 표준화하는 전처리 과정이 필수적입니다.
 
-### 2.3. `INTERSECT` 및 `EXCEPT` (MySQL 대체): 집합 연산의 구현
+### 2.4. `INTERSECT` 및 `EXCEPT` (MySQL 대체): 집합 연산의 구현
 
 다른 SQL 데이터베이스(예: PostgreSQL, SQL Server, Oracle)에서는 `INTERSECT` (교집합)와 `EXCEPT` (차집합) 연산자를 직접 지원합니다. MySQL은 이들을 직접 지원하지 않지만, `JOIN`이나 `NOT EXISTS` 서브쿼리를 사용하여 동일한 결과를 얻을 수 있습니다.
 
-#### 2.3.1. `INTERSECT` (교집합) 대체: 두 집합에 모두 존재하는 요소 찾기
+#### 2.4.1. `INTERSECT` (교집합) 대체: 두 집합에 모두 존재하는 요소 찾기
 
 `INTERSECT`는 두 `SELECT` 문의 결과 중 공통된 로우만 반환합니다. MySQL에서는 `INNER JOIN` 또는 `EXISTS` 서브쿼리를 사용하여 구현할 수 있습니다.
+
+```sql
+-- MySQL 미지원
+SELECT ProductID, Amount FROM Sales_2022
+INTERSECT
+SELECT ProductID, Amount FROM Sales_2023;
+```
+- **INTERSECT 으로 합친 결과**
+    ```plaintext
+    | ProductID | Amount |
+    |-----------|--------|
+    | 1         | 100    |
+    | 3         | 300    |
+    ```
 
 *   **`INNER JOIN`을 이용한 대체:** 가장 일반적이고 성능이 좋은 방법입니다.
     ```sql
@@ -366,9 +485,23 @@ ORDER BY event_time;
 *   **공통 고객/상품 식별:** 특정 기간 동안 두 번 이상 구매한 고객, 두 캠페인에 모두 반응한 사용자 등 여러 조건에 공통적으로 해당하는 대상을 찾을 때.
 *   **데이터 일관성 검증:** 두 데이터셋 간의 일치하는 레코드를 확인하여 데이터 정합성을 검증할 때.
 
-#### 2.3.2. `EXCEPT` (차집합) 대체: 한 집합에만 존재하는 요소 찾기
+#### 2.4.2. `EXCEPT` (차집합) 대체: 한 집합에만 존재하는 요소 찾기
 
 `EXCEPT` (또는 `MINUS` - Oracle)는 첫 번째 `SELECT` 문의 결과 중 두 번째 `SELECT` 문에는 없는 로우만 반환합니다. MySQL에서는 `LEFT JOIN`과 `IS NULL` 또는 `NOT EXISTS` 서브쿼리를 사용하여 구현할 수 있습니다.
+
+```sql
+-- MySQL 미지원
+SELECT ProductID, Amount FROM Sales_2022
+EXCEPT
+SELECT ProductID, Amount FROM Sales_2023;
+```
+- **EXCEPT 으로 합친 결과**
+    ```plaintext
+    | ProductID | Amount |
+    |-----------|--------|
+    | 2         | 200    |
+    | 4         | 400    |
+    ```
 
 *   **`LEFT JOIN`과 `IS NULL`을 이용한 대체:** 가장 일반적이고 직관적인 방법입니다.
     ```sql
