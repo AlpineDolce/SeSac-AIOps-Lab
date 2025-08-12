@@ -41,6 +41,53 @@
 - **앱별 정적 파일 관리**: 각 앱은 자신만의 정적 파일을 가질 수 있습니다. 다른 앱과의 경로 충돌을 방지하기 위해 `app_name/static/app_name/` 과 같은 구조로 파일을 저장하는 것이 Django의 공식 권장 방식입니다. 예를 들어 `blog` 앱의 CSS 파일은 `blog/static/blog/style.css` 에 위치시킵니다.
     - 이렇게 하면 템플릿에서 `{% static 'blog/style.css' %}` 와 같이 명확하게 파일을 참조할 수 있습니다.
 
+#### 1.1.1. 외부 라이브러리(Bootstrap) 적용 예시
+
+웹 개발에서 Bootstrap과 같은 외부 CSS/JS 프레임워크를 사용하는 것은 일반적입니다. Django 프로젝트에 이를 적용하는 방법은 다음과 같습니다.
+
+1.  **Bootstrap 파일 다운로드 및 배치**:
+    *   Bootstrap 공식 웹사이트에서 컴파일된 CSS와 JS 파일을 다운로드합니다.
+    *   다운로드한 파일들을 프로젝트의 `static` 디렉토리 내에 적절한 구조로 배치합니다. 예를 들어:
+        ```
+        <project_root>/
+        └── static/
+            └── bootstrap/
+                ├── css/
+                │   └── bootstrap.min.css
+                └── js/
+                    └── bootstrap.bundle.min.js
+        ```
+    *   `STATICFILES_DIRS`에 `BASE_DIR / "static"`이 설정되어 있어야 합니다.
+
+2.  **템플릿에서 Bootstrap 파일 연결**:
+    *   프로젝트의 기본 템플릿(예: `base.html`)의 `<head>` 섹션에 Bootstrap CSS를, `<body>` 태그 닫히기 전에 Bootstrap JS를 `{% static %}` 태그를 사용하여 연결합니다.
+    ```html
+    <!-- templates/base.html -->
+    {% load static %}
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>My Django App</title>
+        <!-- Bootstrap CSS -->
+        <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+        <!-- 커스텀 CSS (Bootstrap 이후에 로드하여 오버라이드) -->
+        <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+        {% block extra_head %}{% endblock %}
+    </head>
+    <body>
+        <!-- ... 웹사이트 내용 ... -->
+
+        <!-- Bootstrap JS (Popper.js 포함) -->
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        {% block extra_script %}{% endblock %}
+    </body>
+    </html>
+    ```
+    *   `bootstrap.bundle.min.js`는 Popper.js를 포함하고 있어 툴팁, 팝오버, 드롭다운 등 Bootstrap의 모든 JavaScript 컴포넌트를 사용하기에 편리합니다.
+    *   이렇게 설정하면 Django 개발 서버가 `DEBUG=True`일 때 `/static/bootstrap/css/bootstrap.min.css`와 같은 URL을 통해 부트스트랩 파일을 서빙하게 됩니다.
+
 ### 1.2. 운영 환경 설정 (Production)
 
 **가장 중요한 점**: 운영 환경(`DEBUG=False`)에서는 Django 개발 서버가 정적 파일을 더 이상 자동으로 서빙하지 않습니다. 이는 보안과 성능상의 이유이며, 정적 파일 서빙은 Nginx나 Apache 같은 전문 웹 서버에 위임해야 합니다.

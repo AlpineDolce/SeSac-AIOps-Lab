@@ -12,18 +12,37 @@
 - [2. 캐싱 (Caching)](#2-캐싱-caching)
   - [2.1. 캐싱의 필요성](#21-캐싱의-필요성)
   - [2.2. Django 캐싱 프레임워크](#22-django-캐싱-프레임워크)
-  - [2.3. 캐시 백엔드 설정](#23-캐시-백엔드-설정)
-  - [2.4. 캐싱 전략](#24-캐싱-전략)
+  - [2.3. 캐시 백엔드 설정 및 실무적 고려사항](#23-캐시-백엔드-설정-및-실무적-고려사항)
+  - [2.4. 캐싱 전략 및 실무 팁](#24-캐싱-전략-및-실무-팁)
 - [3. 시그널 (Signals)](#3-시그널-signals)
   - [3.1. 시그널의 개념 및 필요성](#31-시그널의-개념-및-필요성)
   - [3.2. 내장 시그널](#32-내장-시그널)
   - [3.3. 시그널 사용 예시](#33-시그널-사용-예시)
+  - [3.4. 커스텀 시그널 (Custom Signals)](#34-커스텀-시그널-custom-signals)
+  - [3.5. 시그널 연결 모범 사례 및 주의사항](#35-시그널-연결-모범-사례-및-주의사항)
+  - [3.6. 시그널 사용의 대안](#36-시그널-사용의-대안)
+  - [3.7. 시그널 테스트 및 디버깅](#37-시그널-테스트-및-디버깅)
 - [4. 심화 학습 및 실무 팁](#4-심화-학습-및-실무-팁)
-  - [4.1. DRF 심화](#41-drf-심화)
-  - [4.2. 테스팅 심화](#42-테스팅-심화)
+  - [4.1. DRF 심화 (Django REST Framework Advanced)](#41-drf-심화-django-rest-framework-advanced)
+  - [4.2. 테스팅 심화 (Testing Advanced)](#42-테스팅-심화-testing-advanced)
   - [4.3. 국제화 및 지역화 (i18n/l10n)](#43-국제화-및-지역화-i18nl10n)
     - [4.3.1. 개념 및 필요성](#431-개념-및-필요성)
     - [4.3.2. Django에서의 구현](#432-django에서의-구현)
+  - [4.4. 로깅 및 모니터링 (Logging \& Monitoring)](#44-로깅-및-모니터링-logging--monitoring)
+  - [4.5. 보안 모범 사례 (Security Best Practices)](#45-보안-모범-사례-security-best-practices)
+  - [4.6. 데이터베이스 최적화 (Database Optimization)](#46-데이터베이스-최적화-database-optimization)
+  - [4.7. API 버전 관리 (API Versioning)](#47-api-버전-관리-api-versioning)
+  - [4.8. 컨테이너화 (Docker) 및 오케스트레이션 (Kubernetes)](#48-컨테이너화-docker-및-오케스트레이션-kubernetes)
+- [5. 추가 심화 주제 (Advanced Topics)](#5-추가-심화-주제-advanced-topics)
+  - [5.1. API 테스트 자동화 (API Test Automation)](#51-api-테스트-자동화-api-test-automation)
+    - [Postman \& Newman](#postman--newman)
+    - [Pytest with DRF](#pytest-with-drf)
+  - [5.2. IaC (Infrastructure as Code)](#52-iac-infrastructure-as-code)
+    - [Terraform](#terraform)
+    - [Ansible](#ansible)
+  - [5.3. GraphQL](#53-graphql)
+    - [Graphene-Django](#graphene-django)
+  - [5.4. Django Channels](#54-django-channels)
 
 ---
 
@@ -772,3 +791,381 @@ API가 발전함에 따라 하위 호환성을 유지하면서 새로운 기능�
 *   **Kubernetes:** 컨테이너화된 애플리케이션의 배포, 스케일링, 관리를 자동화하는 플랫폼입니다. 고가용성, 로드 밸런싱, 자동 복구 등을 제공합니다.
 
 이러한 심화 학습 주제들을 통해 Django 애플리케이션을 더욱 견고하고, 확장 가능하며, 안전하게 구축하고 운영할 수 있습니다.
+
+## 5. 추가 심화 주제 (Advanced Topics)
+
+위에 언급된 주제 외에도, 최신 백엔드 개발 트렌드에 맞춰 다음과 같은 기술들을 학습하고 적용해볼 수 있습니다. 각 주제에 대해 더 깊이 있는 설명과 구체적인 예시를 통해 알아보겠습니다.
+
+### 5.1. API 테스트 자동화 (API Test Automation)
+
+API의 신뢰성을 보장하고, 변경 사항이 기존 기능에 영향을 미치지 않는다는 것을 확인(회귀 테스트)하기 위해 API 테스트 자동화는 필수적입니다.
+
+#### Postman & Newman
+
+*   **상세 설명**: Postman은 API 개발과 테스트를 위한 강력한 GUI 도구입니다. 각 API 요청을 생성하고, 환경 변수(개발, 스테이징, 프로덕션 등)를 설정하여 다양한 환경에서 테스트할 수 있습니다. `Tests` 탭에서 JavaScript 코드를 작성하여 응답 상태 코드, 응답 시간, 반환된 데이터의 유효성 등을 검증하는 테스트 스크립트를 추가할 수 있습니다.
+*   **Newman 연동**: Newman은 Postman에서 작성된 테스트 컬렉션을 커맨드 라인에서 실행시켜주는 도구입니다. 이를 CI/CD 파이프라인에 통합하면, 코드가 변경될 때마다 자동으로 API 테스트를 수행하고 결과를 리포트로 생성할 수 있습니다.
+
+*   **Postman 테스트 스크립트 예시**:
+    ```javascript
+    // 응답 상태 코드가 200인지 확인
+    pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+    });
+
+    // 응답 JSON 데이터에 특정 속성이 있는지 확인
+    pm.test("Response should contain user_id", function () {
+        const responseData = pm.response.json();
+        pm.expect(responseData).to.have.property('user_id');
+    });
+
+    // 응답 헤더의 Content-Type 확인
+    pm.test("Content-Type header is present", function () {
+        pm.response.to.have.header("Content-Type", "application/json; charset=utf-8");
+    });
+    ```
+
+*   **Newman 실행 및 CI/CD 통합**:
+    ```bash
+    # 1. Postman 컬렉션과 환경 변수 파일을 export
+    # my_api_collection.json, staging_environment.json
+
+    # 2. Newman을 사용하여 커맨드 라인에서 실행
+    # --reporters 옵션으로 CLI 출력과 함께 JUnit 형식의 XML 리포트 생성
+    newman run my_api_collection.json -e staging_environment.json --reporters cli,junit --reporter-junit-export report.xml
+    ```
+    생성된 `report.xml` 파일은 Jenkins, GitHub Actions 등에서 테스트 결과를 시각화하는 데 사용될 수 있습니다.
+
+#### Pytest with DRF
+
+*   **상세 설명**: `pytest`는 Python의 대표적인 테스트 프레임워크로, Django의 기본 테스트 러너보다 더 간결한 문법과 강력한 기능을 제공합니다. DRF의 `APIClient`와 함께 사용하면, Python 코드로 직접 API의 동작을 세밀하게 테스트할 수 있습니다.
+*   **핵심 개념**:
+    *   `@pytest.mark.django_db`: 테스트 함수가 데이터베이스에 접근해야 함을 명시합니다. Pytest는 테스트용 DB를 자동으로 생성하고 테스트 종료 후 삭제합니다.
+    *   `APIClient`: 실제 HTTP 요청을 보내는 것처럼 API 엔드포인트를 테스트할 수 있는 클라이언트입니다.
+    *   `client.force_authenticate(user=user_object)`: 특정 사용자로 인증된 상태를 시뮬레이션하여, 인증이 필요한 API를 테스트할 수 있습니다.
+
+*   **API 테스트 코드 예시 (`tests/api/test_posts.py`)**:
+    ```python
+    import pytest
+    from rest_framework.test import APIClient
+    from django.urls import reverse
+    from posts.models import Post
+    from users.models import User
+
+    # pytest fixture를 사용하여 테스트용 사용자 생성
+    @pytest.fixture
+    def api_client():
+        return APIClient()
+
+    @pytest.fixture
+    def authenticated_user(api_client):
+        user = User.objects.create_user(username='testuser', password='password123')
+        api_client.force_authenticate(user=user)
+        return user
+
+    @pytest.mark.django_db
+    class TestPostAPI:
+        def test_get_post_list_unauthenticated(self, api_client):
+            """인증되지 않은 사용자는 게시글 목록을 조회할 수 없다."""
+            url = reverse('post-list') # URL name을 기반으로 URL 생성
+            response = api_client.get(url)
+            assert response.status_code == 401 # 또는 403
+
+        def test_create_post_authenticated(self, api_client, authenticated_user):
+            """인증된 사용자는 게시글을 생성할 수 있다."""
+            url = reverse('post-list')
+            data = {'title': 'New Post', 'content': 'This is a test post.'}
+            response = api_client.post(url, data, format='json')
+
+            assert response.status_code == 201
+            assert Post.objects.count() == 1
+            assert response.data['title'] == 'New Post'
+    ```
+
+### 5.2. IaC (Infrastructure as Code)
+
+인프라를 코드로 관리함으로써 배포 프로세스의 반복성과 신뢰성을 높이고, 인프라 변경 이력을 명확하게 추적할 수 있습니다.
+
+#### Terraform
+
+*   **상세 설명**: Terraform은 선언적(declarative) 언어를 사용하여 인프라를 정의합니다. "어떻게" 구성할지가 아닌, "무엇을" 원하는지를 정의하면 Terraform이 알아서 해당 상태에 맞게 인프라를 구성합니다. `terraform.tfstate` 파일에 현재 인프라 상태를 저장하고, 변경 사항이 발생하면 이 상태 파일과 비교하여 필요한 작업을 계획(`plan`)하고 적용(`apply`)합니다.
+*   **Django 배포를 위한 Terraform 예시 (`main.tf`)**:
+    ```terraform
+    # 사용할 클라우드 제공업체(provider) 설정
+    provider "aws" {
+      region = "ap-northeast-2" # 서울 리전
+    }
+
+    # 웹 트래픽(80, 443)과 SSH(22)를 허용하는 보안 그룹 생성
+    resource "aws_security_group" "web_sg" {
+      name        = "django-web-sg"
+      description = "Allow HTTP, HTTPS, SSH inbound traffic"
+
+      ingress {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+      # ... (HTTPS, SSH 규칙 추가)
+    }
+
+    # EC2 인스턴스(서버) 생성
+    resource "aws_instance" "django_server" {
+      ami           = "ami-0c94855ba95c71c99" # Amazon Linux 2 AMI
+      instance_type = "t2.micro"
+      security_groups = [aws_security_group.web_sg.name]
+
+      tags = {
+        Name = "DjangoServer"
+      }
+    }
+    ```
+*   **실행 흐름**:
+    1.  `terraform init`: 필요한 플러그인 다운로드
+    2.  `terraform plan`: 실행 계획 미리보기
+    3.  `terraform apply`: 계획 적용하여 실제 인프라 생성
+
+#### Ansible
+
+*   **상세 설명**: Ansible은 절차적(procedural) 방식으로 서버 구성을 자동화합니다. 플레이북(Playbook)이라는 YAML 파일에 수행할 작업(task)들을 순서대로 정의합니다. SSH를 통해 대상 서버에 접속하므로 별도의 에이전트 설치가 필요 없어 관리가 용이합니다.
+*   **서버 구성을 위한 Ansible Playbook 예시 (`playbook.yml`)**:
+    ```yaml
+    ---
+    - name: Configure Django Server
+      hosts: webservers # inventory 파일에 정의된 서버 그룹
+      become: yes # root 권한으로 실행
+
+      tasks:
+        - name: Update apt cache
+          apt:
+            update_cache: yes
+
+        - name: Install required system packages
+          apt:
+            name: ['python3-pip', 'nginx', 'git']
+            state: present
+
+        - name: Clone project repository
+          git:
+            repo: 'https://github.com/your-repo/my-django-project.git'
+            dest: /srv/django/myproject
+
+        - name: Install Python dependencies
+          pip:
+            requirements: /srv/django/myproject/requirements.txt
+            virtualenv: /srv/django/myproject/venv
+
+        - name: Configure Nginx
+          template:
+            src: templates/nginx.conf.j2 # Nginx 설정 템플릿 파일
+            dest: /etc/nginx/sites-available/myproject
+
+        - name: Start and enable Gunicorn service
+          systemd:
+            name: gunicorn
+            state: started
+            enabled: yes
+    ```
+
+### 5.3. GraphQL
+
+REST API가 리소스 기반의 여러 엔드포인트(e.g., `/users`, `/posts/1`)를 갖는 것과 달리, GraphQL은 보통 단일 엔드포인트(e.g., `/graphql`)를 통해 모든 데이터 요청을 처리합니다.
+
+#### Graphene-Django
+
+*   **상세 설명**: `graphene-django`는 Django 모델을 GraphQL 타입으로, 뷰 로직을 리졸버(resolver) 함수로 매핑하여 GraphQL API를 쉽게 구축할 수 있게 해줍니다.
+*   **구현 예시**:
+    1.  **`posts/schema.py` (스키마 정의)**:
+        ```python
+        import graphene
+        from graphene_django import DjangoObjectType
+        from .models import Post
+
+        # Django 모델을 GraphQL 타입으로 변환
+        class PostType(DjangoObjectType):
+            class Meta:
+                model = Post
+                fields = ("id", "title", "content", "author")
+
+        # 쿼리 정의 (데이터 조회)
+        class Query(graphene.ObjectType):
+            all_posts = graphene.List(PostType)
+            post_by_id = graphene.Field(PostType, id=graphene.Int(required=True))
+
+            # `all_posts` 필드를 요청했을 때 실행될 함수 (리졸버)
+            def resolve_all_posts(root, info):
+                return Post.objects.select_related("author").all()
+
+            # `post_by_id` 필드를 요청했을 때 실행될 함수 (리졸버)
+            def resolve_post_by_id(root, info, id):
+                return Post.objects.get(pk=id)
+
+        # 뮤테이션 정의 (데이터 생성/수정/삭제)
+        class CreatePost(graphene.Mutation):
+            class Arguments:
+                # 뮤테이션에 전달될 인자 정의
+                title = graphene.String(required=True)
+                content = graphene.String(required=True)
+
+            post = graphene.Field(PostType)
+
+            def mutate(self, info, title, content):
+                # 인증된 사용자 정보 가져오기
+                user = info.context.user
+                if user.is_anonymous:
+                    raise Exception("Not authenticated!")
+
+                post = Post(title=title, content=content, author=user)
+                post.save()
+                return CreatePost(post=post)
+
+        class Mutation(graphene.ObjectType):
+            create_post = CreatePost.Field()
+
+        schema = graphene.Schema(query=Query, mutation=Mutation)
+        ```
+    2.  **`myproject/urls.py` (URL 설정)**:
+        ```python
+        from django.urls import path
+        from graphene_django.views import GraphQLView
+        from posts.schema import schema
+
+        urlpatterns = [
+            # ...
+            # /graphql 엔드포인트로 모든 GraphQL 요청을 처리
+            path("graphql", GraphQLView.as_view(graphiql=True, schema=schema)),
+        ]
+        ```
+*   **클라이언트 요청 예시**:
+    *   **쿼리 (데이터 조회)**:
+        ```graphql
+        query {
+          allPosts {
+            id
+            title
+            author {
+              username
+            }
+          }
+        }
+        ```
+    *   **뮤테이션 (데이터 생성)**:
+        ```graphql
+        mutation {
+          createPost(title: "New Post via GraphQL", content: "This is cool!") {
+            post {
+              id
+              title
+            }
+          }
+        }
+        ```
+
+### 5.4. Django Channels
+
+Channels는 Django를 ASGI(Asynchronous Server Gateway Interface) 애플리케이션으로 확장하여, HTTP 요청뿐만 아니라 WebSocket과 같은 비동기 프로토콜을 처리할 수 있게 합니다.
+
+*   **핵심 구성 요소**:
+    *   **ASGI Application**: `myproject/asgi.py`에 정의되며, 프로토콜 타입을 기준으로 들어오는 연결을 라우팅합니다.
+    *   **Routing**: `myapp/routing.py`에 정의되며, WebSocket 연결의 URL 패턴에 따라 어떤 컨슈머(Consumer)가 처리할지 결정합니다.
+    *   **Consumer**: WebSocket 연결의 라이프사이클(연결, 메시지 수신, 연결 해제)을 처리하는 코드입니다. `AsyncWebsocketConsumer`를 상속받아 비동기적으로 작성합니다.
+    *   **Channel Layer**: 여러 컨슈머 인스턴스 간의 통신을 가능하게 하는 추상화 계층입니다. Redis를 백엔드로 사용하는 `channels_redis`가 주로 사용되며, 특정 그룹(채팅방 등)에 메시지를 브로드캐스팅하는 데 필수적입니다.
+
+*   **간단한 채팅 애플리케이션 구현 예시**:
+    1.  **`myproject/asgi.py`**:
+        ```python
+        import os
+        from django.core.asgi import get_asgi_application
+        from channels.routing import ProtocolTypeRouter, URLRouter
+        from channels.auth import AuthMiddlewareStack
+        import chat.routing
+
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+
+        application = ProtocolTypeRouter({
+            "http": get_asgi_application(),
+            "websocket": AuthMiddlewareStack( # WebSocket 연결 시 Django 인증 정보 사용
+                URLRouter(
+                    chat.routing.websocket_urlpatterns
+                )
+            ),
+        })
+        ```
+    2.  **`chat/routing.py`**:
+        ```python
+        from django.urls import re_path
+        from . import consumers
+
+        websocket_urlpatterns = [
+            # ws/chat/ROOM_NAME/ 형태의 URL을 ChatConsumer와 연결
+            re_path(r'ws/chat/(?P<room_name>\w+), consumers.ChatConsumer.as_asgi()),
+        ]
+        ```
+    3.  **`chat/consumers.py`**:
+        ```python
+        import json
+        from channels.generic.websocket import AsyncWebsocketConsumer
+
+        class ChatConsumer(AsyncWebsocketConsumer):
+            async def connect(self):
+                self.room_name = self.scope['url_route']['kwargs']['room_name']
+                self.room_group_name = f'chat_{self.room_name}'
+
+                # 채널 레이어의 그룹에 참여
+                await self.channel_layer.group_add(
+                    self.room_group_name,
+                    self.channel_name
+                )
+                await self.accept()
+
+            async def disconnect(self, close_code):
+                # 그룹에서 탈퇴
+                await self.channel_layer.group_discard(
+                    self.room_group_name,
+                    self.channel_name
+                )
+
+            # WebSocket으로부터 메시지를 받았을 때 실행
+            async def receive(self, text_data):
+                text_data_json = json.loads(text_data)
+                message = text_data_json['message']
+
+                # 그룹에 메시지 브로드캐스팅
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_message', # 호출할 메서드 이름
+                        'message': message
+                    }
+                )
+
+            # 그룹으로부터 메시지를 받았을 때 실행
+            async def chat_message(self, event):
+                message = event['message']
+
+                # WebSocket으로 메시지 전송
+                await self.send(text_data=json.dumps({
+                    'message': message
+                }))
+        ```
+    4.  **클라이언트 측 JavaScript**:
+        ```javascript
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.message + '\n');
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+        ```

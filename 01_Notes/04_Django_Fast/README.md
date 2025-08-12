@@ -32,8 +32,8 @@
  **왜 중요한가?** AI 모델의 결과물을 외부 서비스나 프론트엔드에 제공하기 위한 API는 AI 백엔드의 핵심 기능이며, 안정적인 배포는 서비스 운영의 필수 단계입니다.
 - [**08_Django_REST_Framework_API_개발.md**](./08_Django_REST_Framework_API_개발.md): DRF 설치 및 설정, Serializer, ViewSet, Router를 이용한 RESTful API 설계 및 구현, 인증/권한 관리를 학습합니다.
 - [**09_Django_테스팅과_품질_관리.md**](./09_Django_테스팅과_품질_관리.md): 단위 테스트, 통합 테스트, 성능 테스트 등 Django 애플리케이션의 품질을 보장하기 위한 테스팅 전략과 도구를 학습합니다.
-- [**10_Django_API_보안_강화.md**](./10_Django_API_보안_강화.md): API Rate Limiting, CORS 설정, 민감 데이터 처리 등 Django REST API의 보안을 강화하는 기법을 학습합니다.
-- [**11_Django_로깅_및_모니터링.md**](./11_Django_로깅_및_모니터링.md): 애플리케이션 로깅 전략, 성능 모니터링 도구 및 기법을 학습하여 안정적인 서비스 운영 역량을 강화합니다.
+- [**10_Django_API_보안_강화.md**](./10_Django_API_보안_강화.md): API 보안의 핵심 요소인 인증(Token/JWT), 인가(Permission), CORS, Rate Limiting 설정을 깊이 있게 다루고, HTTPS 강제 적용, 보안 헤더 설정 등 운영 환경에서 필수적인 보안 강화 기법들을 학습합니다.
+- [**11_Django_로깅_및_모니터링.md**](./11_Django_로깅_및_모니터링.md): 운영 환경에 필수적인 로깅 및 모니터링 체계를 구축합니다. 구조화된 로깅, 요청 ID 추적, Sentry를 이용한 에러 및 성능 모니터링, `django-health-check`를 통한 서비스 상태 점검, Slack 연동을 통한 실시간 알림 시스템 구현 방법을 학습합니다.
 - [**12_Django_배포.md**](./12_Django_배포.md): Gunicorn, Nginx, Docker 등을 활용한 Django 애플리케이션의 실제 서버 배포 과정 및 고려사항을 학습합니다.
 
 ### Part 5: Django 고급 주제 및 AI 통합
@@ -41,5 +41,5 @@
 
  **왜 중요한가?** 복잡하고 대규모의 AI 서비스를 안정적으로 운영하기 위해서는 Django의 고급 기능과 성능 최적화, 그리고 AI 모델과의 긴밀한 연동이 필수적입니다.
 - [**13_Django_고급_주제.md**](./13_Django_고급_주제.md): 비동기 처리(ASGI, Channels), 캐싱, 시그널, 커스텀 커맨드 등 Django의 고급 기능과 AI 모델 서빙을 위한 통합 전략을 학습합니다.
-- [**14_Django_AI_모델_서빙_심화.md**](./14_Django_AI_모델_서빙_심화.md): AI 모델의 효율적인 로딩, 버전 관리, 추론 최적화 및 서빙 아키텍처(예: ONNX Runtime, TensorFlow Serving 연동)를 심층적으로 다룹니다.
-- [**15_Django_비동기_작업_및_Celery.md**](./15_Django_비동기_작업_및_Celery.md): Celery를 활용한 백그라운드 작업 처리, 장시간 소요되는 AI 작업(예: 모델 학습, 대규모 추론)의 비동기 실행 및 관리 방법을 학습합니다.
+- [**14_Django_AI_모델_서빙_심화.md**](./14_Django_AI_모델_서빙_심화.md): Django와 AI 모델을 통합하는 심화 서빙 전략을 다룹니다. 앱 시작 시 모델을 로딩하고 DB로 버전을 관리하는 방법, 양자화 등 추론 최적화 기법, 그리고 Django 직접 통합 방식과 TensorFlow Serving/ONNX Runtime 등 외부 서빙 엔진과 연동하는 아키텍처별 코드 예제를 심층적으로 학습합니다.
+- [**15_Django_비동기_작업_및_Celery.md**](./15_Django_비동기_작업_및_Celery.md): Celery를 이용해 장시간 소요되는 작업을 비동기적으로 처리하는 방법을 학습합니다. Docker 기반의 Celery 환경 설정, 멱등성과 자동 재시도를 포함한 견고한 Task 작성법, 모델 학습과 같은 긴 작업의 진행 상태를 사용자에게 보여주는 방법, Flower를 이용한 모니터링 및 관리 기법을 다룹니다.

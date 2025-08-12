@@ -45,11 +45,11 @@
     - [**4. 기타 유용한 조회 메서드**](#4-기타-유용한-조회-메서드)
   - [4.2. 데이터 생성: `create()`, `save()`, `get_or_create()`, `bulk_create()`](#42-데이터-생성-create-save-get_or_create-bulk_create)
     - [**방법 1: `create()` - 가장 간단한 한 줄 생성**](#방법-1-create---가장-간단한-한-줄-생성)
-    - [**방법 2: `save()` - 유연한 2단계 생성**](#방법-2-save---유연한-2단계-생성)
+    - [**방법 2: `save()` - 유연한 2단계 생성 (실무 핵심)**](#방법-2-save---유연한-2단계-생성-실무-핵심)
     - [**방법 3: `get_or_create()` - 중복 방지 생성**](#방법-3-get_or_create---중복-방지-생성)
     - [**방법 4: `bulk_create()` - 대량 데이터 고속 생성**](#방법-4-bulk_create---대량-데이터-고속-생성)
   - [4.3. 데이터 수정: `save()`, `update()`, 그리고 `F()` 표현식](#43-데이터-수정-save-update-그리고-f-표현식)
-    - [**방법 1: `save()` - 가장 일반적인 객체 단위 수정**](#방법-1-save---가장-일반적인-객체-단위-수정)
+    - [**방법 1: `save()` - 객체 단위 수정 (실무 핵심)**](#방법-1-save---객체-단위-수정-실무-핵심)
     - [**`save()` 사용 시 주의점: Race Condition**](#save-사용-시-주의점-race-condition)
     - [**방법 2: `F()` 표현식 - 원자적 연산으로 Race Condition 해결**](#방법-2-f-표현식---원자적-연산으로-race-condition-해결)
     - [**방법 3: `update()` - 여러 객체를 한 번에 효율적으로 수정**](#방법-3-update---여러-객체를-한-번에-효율적으로-수정)
@@ -57,13 +57,18 @@
   - [4.4. 데이터 삭제: 하드 삭제(Hard Delete) vs 소프트 삭제(Soft Delete)](#44-데이터-삭제-하드-삭제hard-delete-vs-소프트-삭제soft-delete)
     - [**방법 1: 하드 삭제 (Hard Delete) - 기본 `delete()`**](#방법-1-하드-삭제-hard-delete---기본-delete)
     - [**방법 2: 소프트 삭제 (Soft Deletion) - 실무 권장 패턴**](#방법-2-소프트-삭제-soft-deletion---실무-권장-패턴)
+    - [**소프트 삭제된 데이터 관리 (휴지통 기능)**](#소프트-삭제된-데이터-관리-휴지통-기능)
   - [4.5. 고급 쿼리셋 및 최적화: 실무 심화](#45-고급-쿼리셋-및-최적화-실무-심화)
     - [**4.5.1. 쿼리 성능 최적화**](#451-쿼리-성능-최적화)
     - [**4.5.2. 복잡한 쿼리 작성**](#452-복잡한-쿼리-작성)
     - [**4.5.3. 코드 추상화 및 재사용**](#453-코드-추상화-및-재사용)
     - [4.5.4. 트랜잭션 (Transactions)](#454-트랜잭션-transactions)
     - [4.5.5. 커스텀 매니저 (Custom Managers)](#455-커스텀-매니저-custom-managers)
-  - [4.6. 직접 데이터베이스 접근 및 Raw 쿼리](#46-직접-데이터베이스-접근-및-raw-쿼리)
+  - [4.6. 직접 데이터베이스 접근 및 Raw 쿼리: 최후의 수단](#46-직접-데이터베이스-접근-및-raw-쿼리-최후의-수단)
+    - [**언제 Raw 쿼리를 사용해야 하는가?**](#언제-raw-쿼리를-사용해야-하는가)
+    - [**방법 1: `Model.objects.raw()` - 가장 안전하고 권장되는 방법**](#방법-1-modelobjectsraw---가장-안전하고-권장되는-방법)
+    - [**방법 2: `connection.cursor()` - 가장 낮은 수준의 직접 접근**](#방법-2-connectioncursor---가장-낮은-수준의-직접-접근)
+    - [**상황별 Raw 쿼리 사용법 요약**](#상황별-raw-쿼리-사용법-요약)
 
 ---
 
@@ -621,6 +626,107 @@ Django 모델 필드는 데이터베이스 컬럼의 타입과 제약조건, 그
 
 Django ORM은 `QuerySet` 객체를 통해 데이터베이스에서 데이터를 조회, 생성, 수정, 삭제하는 강력한 API를 제공합니다. 모델 매니저(`objects`)를 통해 쿼리셋을 얻을 수 있습니다.
 
+---
+**실습을 위한 모델 정의**
+
+이하 모든 예제는 아래와 같이 정의된 `blog` 앱의 모델들을 기준으로 작성되었습니다. 타임스탬프, 소프트 삭제, 다대다 관계 등 실무적인 요소들을 포함하고 있습니다.
+
+```python
+# blog/models.py
+
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+
+# --- 공용 추상 모델 ---
+
+class TimestampedModel(models.Model):
+    """ 생성 및 수정일시를 자동으로 기록하는 추상 기본 클래스 """
+    created_at = models.DateTimeField("생성일시", auto_now_add=True)
+    updated_at = models.DateTimeField("수정일시", auto_now=True)
+
+    class Meta:
+        abstract = True
+
+class SoftDeletionManager(models.Manager):
+    """ 소프트 삭제되지 않은 객체만 조회하는 커스텀 매니저 """
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+class SoftDeletionModel(models.Model):
+    """ 
+    소프트 삭제 기능을 위한 추상 기본 클래스.
+    delete() 메서드를 오버라이드하여 실제 삭제 대신 is_deleted 플래그를 활성화합니다.
+    """
+    is_deleted = models.BooleanField("삭제 여부", default=False)
+    deleted_at = models.DateTimeField("삭제일시", null=True, blank=True, default=None)
+
+    objects = SoftDeletionManager()  # 기본 매니저를 교체
+    all_objects = models.Manager()   # 삭제된 객체 포함, 모든 객체에 접근하기 위한 매니저
+
+    def delete(self, using=None, keep_parents=False):
+        """ 소프트 삭제를 수행 """
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save(update_fields=['is_deleted', 'deleted_at'])
+
+    def restore(self):
+        """ 소프트 삭제된 객체를 복구 """
+        self.is_deleted = False
+        self.deleted_at = None
+        self.save(update_fields=['is_deleted', 'deleted_at'])
+
+    def hard_delete(self, using=None, keep_parents=False):
+        """ 데이터베이스에서 영구적으로 삭제 """
+        return super().delete(using, keep_parents)
+
+    class Meta:
+        abstract = True
+
+# --- 블로그 앱 모델 ---
+
+class Post(TimestampedModel, SoftDeletionModel):
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        verbose_name="작성자",
+        on_delete=models.CASCADE, 
+        related_name="posts"
+    )
+    title = models.CharField("제목", max_length=255)
+    content = models.TextField("내용")
+    tags = models.ManyToManyField('Tag', verbose_name="태그", related_name='posts', blank=True)
+    is_published = models.BooleanField("공개 여부", default=False, db_index=True)
+    hit = models.PositiveIntegerField("조회수", default=0)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "게시글"
+        verbose_name_plural = "게시글 목록"
+
+    def __str__(self):
+        return self.title
+
+class Comment(TimestampedModel, SoftDeletionModel):
+    post = models.ForeignKey(Post, verbose_name="게시글", on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="작성자", on_delete=models.CASCADE, related_name="comments")
+    content = models.TextField("댓글 내용")
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = "댓글"
+        verbose_name_plural = "댓글 목록"
+
+    def __str__(self):
+        return f"{self.author.username}의 댓글: {self.content[:20]}..."
+
+class Tag(models.Model):
+    name = models.CharField("태그명", max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+```
+---
+
 ### 4.1. 데이터 조회: 쿼리셋(QuerySet)의 이해와 활용
 
 데이터 조회는 ORM의 가장 기본적이면서도 중요한 기능입니다. Django에서는 **쿼리셋(QuerySet)** 이라는 특별한 객체를 통해 데이터베이스와 소통합니다.
@@ -637,47 +743,65 @@ Django ORM은 `QuerySet` 객체를 통해 데이터베이스에서 데이터를 
 
 - **왜 중요한가?**: 이 "지연 평가" 특성 덕분에, 여러 `filter`, `exclude`, `order_by` 등을 마치 레고 블록처럼 여러 줄에 걸쳐 조합하더라도, 최종적으로 단 한 번의 효율적인 데이터베이스 쿼리만 실행하게 됩니다.
 
-```python
-# 아직 DB 쿼리 실행 안 됨
->>> posts = Post.objects.filter(is_published=True)
-
-# 아직 DB 쿼리 실행 안 됨
->>> posts = posts.exclude(author__username='admin')
-
-# 아직 DB 쿼리 실행 안 됨
->>> posts = posts.order_by('-created_at')
-
-# 이 시점에서 위 모든 조건을 합쳐 단 한 번의 SQL 쿼리가 실행됨
->>> print(posts)
-```
-
 #### **1. 모든 객체 조회: `all()`**
-
 테이블의 모든 레코드를 포함하는 쿼리셋을 반환합니다. 모델에 `class Meta`의 `ordering` 옵션이 정의되어 있다면 해당 순서로, 없다면 보장되지 않은 순서로 반환됩니다. `.order_by()`를 함께 사용하여 명시적으로 정렬하는 것이 일반적입니다.
+- **Django Shell에서 확인하기**
+  ```bash
+  python manage.py shell
+  ```
+  ```python
+  >>> from blog.models import Post
+  # Post.objects는 소프트 삭제되지 않은 모든 Post 객체를 가리킴
+  >>> all_posts = Post.objects.all() 
+  >>> print(all_posts)
+  <QuerySet [<Post: ...>, <Post: ...>]>
+  ```
 
-```python
-# 모든 게시글을 최신순으로 정렬하여 가져오기
-all_posts = Post.objects.all().order_by('-created_at')
-```
+- **View 함수에서 활용하기**
+  ```python
+  # blog/views.py
+  from django.shortcuts import render
+  from .models import Post
+
+  def post_list(request):
+      # 공개된 게시글만 최신순으로 가져오기
+      posts = Post.objects.filter(is_published=True).order_by('-created_at')
+      context = {'posts': posts}
+      return render(request, 'blog/post_list.html', context)
+  ```
 
 #### **2. 단 하나의 객체 조회: `get()`**
-
 주어진 조건과 일치하는 **단 하나의 객체**를 반환합니다. 기본 키(pk)로 조회할 때 가장 많이 사용됩니다.
 
 - **주의할 점**: `get()`은 조건에 맞는 객체가 없으면 `Model.DoesNotExist` 예외를, 두 개 이상이면 `Model.MultipleObjectsReturned` 예외를 발생시킵니다. 따라서 항상 예외 처리를 염두에 두어야 합니다.
 
 - **실무 Best Practice**: 뷰에서는 `try...except` 블록을 직접 사용하는 것보다, `get_object_or_404()` 단축 함수를 사용하는 것이 훨씬 깔끔하고 일반적입니다. 객체가 없으면 자동으로 HTTP 404 (Not Found) 응답을 반환해줍니다.
+- **Django Shell에서 확인하기**
+  ```python
+  >>> from blog.models import Post
+  # pk(Primary Key)가 1인 게시글 조회
+  >>> post = Post.objects.get(pk=1)
+  >>> print(post.title)
+  '첫 번째 게시글'
+  
+  # 없는 pk로 조회 시 예외 발생
+  >>> Post.objects.get(pk=999)
+  blog.models.Post.DoesNotExist: Post matching query does not exist.
+  ```
 
-```python
-# views.py
-from django.shortcuts import get_object_or_404
-from .models import Post
+- **View 함수에서 활용하기 (Best Practice)**
+  뷰에서는 `get()`의 예외를 직접 처리하기보다, `get_object_or_404()`를 사용하는 것이 훨씬 간결하고 실용적입니다.
+  ```python
+  # blog/views.py
+  from django.shortcuts import render, get_object_or_404
+  from .models import Post
 
-def post_detail(request, post_id):
-    # post = Post.objects.get(pk=post_id) # DoesNotExist 예외 발생 가능
-    post = get_object_or_404(Post, pk=post_id) # 더 안전하고 간결한 방법
-    return render(request, 'blog/post_detail.html', {'post': post})
-```
+  def post_detail(request, post_id):
+      # pk=post_id 조건으로 Post를 찾고, 없으면 404 에러 페이지를 보여줌
+      post = get_object_or_404(Post, pk=post_id, is_published=True)
+      context = {'post': post}
+      return render(request, 'blog/post_detail.html', context)
+  ```
 
 #### **3. 조건에 맞는 객체 필터링: `filter()` 와 `exclude()`**
 
@@ -700,28 +824,55 @@ def post_detail(request, post_id):
 
 - **관계를 넘나드는 조회**: `__`는 `ForeignKey` 관계를 따라 다른 테이블의 필드를 조회하는 데에도 사용됩니다. 이것이 ORM의 가장 강력한 기능 중 하나입니다.
 
-```python
-# 작성자의 username이 'alice'인 모든 게시글 조회
-Post.objects.filter(author__username='alice')
+- **Django Shell에서 확인하기**
+  ```python
+  >>> from blog.models import Post
+  >>> from django.contrib.auth.models import User
+  >>> user_alice = User.objects.get(username='alice')
 
-# 'Django'라는 단어를 포함하는 댓글이 달린 모든 게시글 조회 (중복 포함)
-Post.objects.filter(comments__content__icontains='django')
+  # alice가 작성한 글 중, 제목에 'Django'가 포함된 글만 필터링
+  >>> posts = Post.objects.filter(author=user_alice, title__icontains='Django')
+  
+  # 공개되지 않은 글 제외
+  >>> published_posts = Post.objects.exclude(is_published=False)
 
-# 특정 User가 작성한 게시글 중, 제목이 'Python'으로 시작하는 것만 조회
-user = User.objects.get(username='bob')
-user.posts.filter(title__startswith='Python') # related_name을 사용한 역참조
-```
+  # 'python' 태그가 달린 모든 게시글 조회 (관계 필드 필터링)
+  >>> Post.objects.filter(tags__name='python')
+  ```
+
+- **View 함수에서 활용하기 (검색 기능)**
+  ```python
+  # blog/views.py
+  def search_post(request):
+      # URL 쿼리 파라미터에서 검색어 가져오기 (예: /search?q=django)
+      query = request.GET.get('q', '')
+      if query:
+          # 제목 또는 내용에 검색어가 포함된 게시글 검색
+          posts = Post.objects.filter(title__icontains=query) | Post.objects.filter(content__icontains=query)
+          posts = posts.filter(is_published=True).distinct() # 중복 제거
+      else:
+          posts = Post.objects.none() # 검색어가 없으면 빈 쿼리셋 반환
+      
+      context = {'posts': posts, 'query': query}
+      return render(request, 'blog/search_results.html', context)
+  ```
 
 #### **4. 기타 유용한 조회 메서드**
 
-- **`first()` / `last()`**: 쿼리셋의 첫 번째 또는 마지막 객체를 반환합니다. `my_queryset[0]`처럼 인덱싱하는 것보다 안전한데, 결과가 없을 경우 `IndexError` 대신 `None`을 반환하기 때문입니다.
-- **`exists()`**: 쿼리셋에 결과가 존재하는지 여부(`True`/`False`)만 확인합니다. 단순히 존재 여부만 궁금할 때 `.count() > 0` 이나 `if my_queryset:` 보다 훨씬 효율적입니다. 데이터베이스에서 필요한 최소한의 정보만 가져오기 때문입니다.
-    ```python
-    # 좋은 예
-    if Post.objects.filter(title="...", author=request.user).exists():
-        print("이미 동일한 제목의 글이 존재합니다.")
-    ```
-- **`count()`**: 쿼리셋에 포함된 객체의 개수를 정수로 반환합니다. `len()`보다 효율적인데, `len()`은 모든 객체를 메모리로 가져와 개수를 세지만, `count()`는 데이터베이스 레벨에서 `SELECT COUNT(*)`를 실행하기 때문입니다.
+- **`count()`**: 쿼리셋의 객체 수를 반환합니다. `len()`보다 효율적입니다.
+- **`exists()`**: 쿼리셋에 결과가 하나라도 존재하는지 확인합니다. `count() > 0` 보다 효율적입니다.
+- **`first()`, `last()`**: 쿼리셋의 첫 번째, 마지막 객체를 반환합니다. 결과가 없으면 `None`을 반환하여 안전합니다.
+
+```python
+# 공개된 게시글의 총 개수
+num_posts = Post.objects.filter(is_published=True).count()
+
+# 'alice'가 작성한 글이 하나라도 있는지 확인
+has_posts = Post.objects.filter(author__username='alice').exists()
+
+# 가장 최근에 작성된 댓글
+latest_comment = Comment.objects.latest('created_at')
+```
 
 ### 4.2. 데이터 생성: `create()`, `save()`, `get_or_create()`, `bulk_create()`
 
@@ -735,23 +886,25 @@ user.posts.filter(title__startswith='Python') # related_name을 사용한 역참
 - **장점**: 코드가 간결하고 직관적입니다.
 - **단점**: 객체가 데이터베이스에 저장되기 전에 추가적인 로직을 수행할 수 없습니다.
 
-```python
-# views.py
-from django.contrib.auth.models import User
 
-def create_simple_post(request):
-    author = User.objects.get(pk=1)
-    # create()는 생성된 post 객체를 반환합니다.
-    new_post = Post.objects.create(
-        author=author,
-        title="create() 메서드 사용법",
-        content="한 줄의 코드로 객체를 생성하고 DB에 저장합니다.",
-        is_published=True,
-    )
-    return HttpResponse(f"Post created with ID: {new_post.id}")
-```
+- **Django Shell에서 확인하기**
+  ```python
+  >>> from blog.models import Post
+  >>> from django.contrib.auth.models import User
+  >>> author = User.objects.get(pk=1)
+  >>> new_post = Post.objects.create(
+  ...     author=author,
+  ...     title='새로운 포스트',
+  ...     content='create 메서드로 생성되었습니다.',
+  ...     is_published=True
+  ... )
+  >>> print(new_post.id)
+  5  # 예시 ID
+  ```
 
-#### **방법 2: `save()` - 유연한 2단계 생성**
+#### **방법 2: `save()` - 유연한 2단계 생성 (실무 핵심)**
+
+`ModelForm`과 함께 사용하여 사용자의 입력을 처리하고 저장 전 추가 로직을 적용할 때 가장 많이 사용됩니다.
 
 이 방식은 객체를 메모리에 먼저 생성하고, 원하는 시점에 `save()` 메서드를 호출하여 데이터베이스에 저장합니다.
 
@@ -761,26 +914,41 @@ def create_simple_post(request):
 - **장점**: 데이터베이스에 저장하기 전에 모델 인스턴스의 속성을 변경하거나, 모델에 정의된 다른 메서드를 호출하는 등 복잡한 로직을 수행할 수 있는 유연성을 제공합니다. `request` 객체처럼 폼 데이터에 포함되지 않은 추가적인 데이터를 모델에 채워 넣어야 할 때 필수적입니다.
 - **단점**: `create()`에 비해 코드가 몇 줄 더 길어집니다.
 
-```python
-# views.py
 
-def create_post_with_logic(request):
-    # 1. 메모리에 객체 인스턴스 생성 (아직 DB 저장 안 됨)
-    post = Post(author=request.user, title=request.POST.get('title'))
+- **View 함수에서 활용하기 (게시글 작성 뷰)**
+  ```python
+  # blog/forms.py
+  from django import forms
+  from .models import Post
 
-    # 2. DB에 저장하기 전, 추가 로직 수행
-    if '임시저장' in post.title:
-        post.is_published = False
-    else:
-        post.is_published = True
-    
-    post.content = f"{post.title}에 대한 내용입니다."
+  class PostForm(forms.ModelForm):
+      class Meta:
+          model = Post
+          fields = ['title', 'content', 'tags', 'is_published']
 
-    # 3. save()를 호출하여 DB에 저장
-    post.save()
-    return HttpResponse(f"Post saved with ID: {post.id}")
-```
-이전 문서의 `form.save(commit=False)` 예시가 바로 이 `save()` 방식의 대표적인 활용 사례입니다.
+  # blog/views.py
+  from django.shortcuts import render, redirect
+  from .forms import PostForm
+
+  def post_create(request):
+      if request.method == 'POST':
+          form = PostForm(request.POST)
+          if form.is_valid():
+              # 1. commit=False: DB 저장을 지연하고, 메모리에 객체만 생성
+              post = form.save(commit=False)
+              # 2. 저장 전 추가 로직 수행 (작성자 정보 추가)
+              post.author = request.user
+              # 3. 실제 DB에 저장
+              post.save()
+              # 4. ManyToMany 필드는 save() 이후에 저장해야 함
+              form.save_m2m() 
+              return redirect('post_detail', post_id=post.id)
+      else:
+          form = PostForm()
+      
+      context = {'form': form}
+      return render(request, 'blog/post_form.html', context)
+  ```
 
 #### **방법 3: `get_or_create()` - 중복 방지 생성**
 
@@ -792,22 +960,27 @@ def create_post_with_logic(request):
     - `created`: 객체가 새로 생성되었으면 `True`, 기존 객체를 가져왔으면 `False`인 불리언 값입니다. 이 값을 통해 후속 처리를 분기할 수 있습니다.
 - **사용 사례**: 태그(Tag) 생성, 사용자 프로필 생성 등 중복되면 안 되는 데이터를 처리할 때 매우 유용합니다.
 
-```python
-# 게시글에 태그를 추가하는 로직
-def add_tags_to_post(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    tag_names = ['django', 'python', 'web']
 
-    for name in tag_names:
-        # 'django' 태그가 있으면 가져오고, 없으면 새로 생성
-        tag, created = Tag.objects.get_or_create(name=name)
-        post.tags.add(tag) # ManyToMany 관계에 추가
+- **View 함수에서 활용하기 (태그 처리)**
+  사용자가 입력한 태그 문자열을 분리하여, 기존에 없던 태그만 새로 생성하고 게시글에 연결합니다.
+  ```python
+  # ... post_create 뷰의 form.is_valid() 블록 내부 ...
+  if form.is_valid():
+      post = form.save(commit=False)
+      post.author = request.user
+      post.save()
 
-        if created:
-            print(f"새로운 태그 '{name}'이 생성되었습니다.")
-        else:
-            print(f"기존 태그 '{name}'을 사용합니다.")
-```
+      # 사용자가 폼에서 입력한 태그 이름들 (예: "django, python")
+      tag_names_str = request.POST.get('tags_string', '')
+      tag_names = [name.strip() for name in tag_names_str.split(',') if name.strip()]
+
+      for tag_name in tag_names:
+          # 태그가 있으면 가져오고(get), 없으면 생성(create)
+          tag, created = Tag.objects.get_or_create(name=tag_name)
+          post.tags.add(tag) # 게시글과 태그 연결
+
+      return redirect('post_detail', post_id=post.id)
+  ```
 
 #### **방법 4: `bulk_create()` - 대량 데이터 고속 생성**
 
@@ -818,21 +991,40 @@ def add_tags_to_post(request, post_id):
     - `auto_now_add`나 `auto_now` 같은 필드는 자동으로 채워지지 않을 수 있습니다. (Django 버전에 따라 동작이 다를 수 있음)
     - 일부 데이터베이스(예: 구버전 MySQL)에서는 생성된 객체의 기본 키(`id`)가 반환되지 않을 수 있습니다.
 
-```python
-# 100개의 Post 객체를 리스트에 준비 (아직 DB 저장 안 됨)
-posts_to_create = [
-    Post(author=request.user, title=f"Bulk Post {i}") for i in range(100)
-]
 
-# 단 한 번의 쿼리로 100개의 레코드를 DB에 삽입
-Post.objects.bulk_create(posts_to_create)
-```
+- **Management Command에서 활용하기 (초기 데이터 생성)**
+  `python manage.py seed_posts` 와 같이 실행하여 테스트용 데이터를 대량으로 생성할 때 유용합니다.
+  ```python
+  # blog/management/commands/seed_posts.py
+  from django.core.management.base import BaseCommand
+  from blog.models import Post
+  from django.contrib.auth.models import User
+
+  class Command(BaseCommand):
+      help = 'Creates 100 dummy posts for testing.'
+
+      def handle(self, *args, **options):
+          user = User.objects.first()
+          if not user:
+              self.stdout.write(self.style.ERROR('Create a user first.'))
+              return
+
+          posts_to_create = [
+              Post(author=user, title=f'Test Post {i}', content='...')
+              for i in range(100)
+          ]
+          
+          # 단 한 번의 쿼리로 모든 객체 생성
+          Post.objects.bulk_create(posts_to_create)
+          
+          self.stdout.write(self.style.SUCCESS('Successfully created 100 posts.'))
+  ```
 
 ### 4.3. 데이터 수정: `save()`, `update()`, 그리고 `F()` 표현식
 
 데이터 수정은 단순히 필드 값을 바꾸는 것 이상의 의미를 가집니다. 실무에서는 **데이터 무결성**과 **성능**을 함께 고려해야 합니다.
 
-#### **방법 1: `save()` - 가장 일반적인 객체 단위 수정**
+#### **방법 1: `save()` - 객체 단위 수정 (실무 핵심)**
 
 가장 기본적인 수정 방법은 객체를 데이터베이스에서 불러와, 파이썬 객체의 속성을 변경한 뒤, 다시 `save()`를 호출하는 것입니다.
 
@@ -840,21 +1032,30 @@ Post.objects.bulk_create(posts_to_create)
 - **장점**: 모델의 `save()` 메서드를 오버라이드하여 구현한 커스텀 로직이나, `pre_save`, `post_save` 같은 시그널이 정상적으로 호출됩니다. 객체 단위의 비즈니스 로직을 수행하기에 적합합니다.
 - **단점**: 데이터를 읽고(SELECT), 수정하고, 저장하는(UPDATE) 과정에서 여러 번의 DB 통신이 필요하며, 동시성 문제(Race Condition)에 취약할 수 있습니다.
 
-```python
-# views.py
 
-def update_post_title(request, post_id):
-    # 1. 객체 조회
-    post = get_object_or_404(Post, pk=post_id)
+- **View 함수에서 활용하기 (게시글 수정 뷰)**
+  ```python
+  # blog/views.py
+  def post_update(request, post_id):
+      post = get_object_or_404(Post, pk=post_id)
 
-    # 2. 파이썬 객체의 속성 변경
-    post.title = "새로운 제목입니다."
-    post.is_published = True
+      # 본인만 수정 가능하도록 권한 확인
+      if request.user != post.author:
+          return HttpResponseForbidden("수정 권한이 없습니다.")
 
-    # 3. save() 호출 -> UPDATE 쿼리 실행
-    post.save()
-    return HttpResponse("Post updated!")
-```
+      if request.method == 'POST':
+          # instance=post: 기존 객체 위에 폼 데이터를 덮어씌움
+          form = PostForm(request.POST, instance=post)
+          if form.is_valid():
+              form.save() # pk가 있으므로 UPDATE 쿼리가 실행됨
+              return redirect('post_detail', post_id=post.id)
+      else:
+          # GET 요청 시, 기존 데이터를 채운 폼을 보여줌
+          form = PostForm(instance=post)
+      
+      context = {'form': form, 'post': post}
+      return render(request, 'blog/post_form.html', context)
+  ```
 
 #### **`save()` 사용 시 주의점: Race Condition**
 
@@ -875,18 +1076,25 @@ def increase_hit_count(post_id):
 
 - **동작 원리**: `post.hit = F('hit') + 1` 코드는 "`posts` 테이블에서 이 레코드의 `hit` 컬럼 값을 가져와서 1을 더한 값으로 업데이트하라"는 단일 SQL `UPDATE` 문으로 변환됩니다. 읽고 쓰는 과정이 데이터베이스 내에서 원자적(atomic)으로 일어나므로 Race Condition이 발생하지 않습니다.
 
-```python
-# Race Condition에 안전한 코드
-from django.db.models import F
+- **View 함수에서 활용하기 (조회수 증가)**
+  게시글 상세 페이지에 접근할 때마다 `F()` 표현식을 사용하여 안전하게 조회수를 1 증가시킵니다.
+  ```python
+  # blog/views.py
+  from django.db.models import F
 
-def increase_hit_count_safe(post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    post.hit = F('hit') + 1
-    post.save()
+  def post_detail(request, post_id):
+      post = get_object_or_404(Post, pk=post_id)
+      
+      # F() 표현식을 사용하여 DB 레벨에서 원자적으로 조회수 증가
+      post.hit = F('hit') + 1
+      post.save(update_fields=['hit']) # hit 필드만 업데이트하도록 최적화
+      
+      # 변경된 값을 즉시 보려면 DB에서 다시 로드
+      post.refresh_from_db()
 
-    # post 객체의 hit 값을 최신으로 보려면 DB에서 다시 읽어야 함
-    post.refresh_from_db()
-```
+      context = {'post': post}
+      return render(request, 'blog/post_detail.html', context)
+  ```
 
 #### **방법 3: `update()` - 여러 객체를 한 번에 효율적으로 수정**
 
@@ -895,32 +1103,40 @@ def increase_hit_count_safe(post_id):
 - **장점**: 대량의 데이터를 수정할 때 성능상 압도적으로 유리합니다.
 - **주의사항**: 이 메서드는 모델의 `save()` 메서드나 `pre_save`/`post_save` 시그널을 발생시키지 않으며, `auto_now` 필드를 자동으로 갱신하지도 않습니다. 순수하게 데이터베이스 레벨에서 `UPDATE` 쿼리만 실행합니다.
 
-```python
-# 2023년 이전에 작성된 모든 게시글을 비공개 처리
-Post.objects.filter(created_at__year__lt=2023).update(is_published=False)
 
-# F() 표현식과 함께 사용: 모든 상품의 재고를 10개씩 늘리기
-Product.objects.all().update(stock=F('stock') + 10)
-```
+- **Management Command에서 활용하기 (일괄 작업)**
+  ```python
+  # blog/management/commands/publish_all.py
+  from django.core.management.base import BaseCommand
+  from blog.models import Post
+  import datetime
+
+  class Command(BaseCommand):
+      help = 'Publishes all posts created before today.'
+
+      def handle(self, *args, **options):
+          today = datetime.date.today()
+          # 어제까지 작성된 모든 비공개 게시글을 한 번에 공개 처리
+          updated_count = Post.objects.filter(
+              is_published=False,
+              created_at__lt=today
+          ).update(is_published=True)
+          
+          self.stdout.write(self.style.SUCCESS(f'{updated_count} posts published.'))
+  ```
 
 #### **성능 최적화: `save(update_fields=[...])`**
 
 `save()` 메서드는 기본적으로 모델의 모든 필드를 `UPDATE` 쿼리에 포함시킵니다. 만약 특정 필드 몇 개만 수정했다는 것을 명확히 안다면, `update_fields` 인자를 사용하여 변경이 필요한 필드만 지정할 수 있습니다. 이는 불필요한 DB 쓰기를 줄여 성능을 개선하는 데 도움이 됩니다.
 
-```python
-# title 필드만 DB에 UPDATE 하도록 지정
-post = Post.objects.get(pk=1)
-post.title = "Updated Title"
-post.save(update_fields=['title'])
-```
-
 ### 4.4. 데이터 삭제: 하드 삭제(Hard Delete) vs 소프트 삭제(Soft Delete)
 
-데이터 삭제는 단순히 레코드를 없애는 것 이상의 신중한 고려가 필요한 작업입니다. 실무에서는 데이터를 영구적으로 제거하는 '하드 삭제'보다, 삭제된 것처럼 보이지만 데이터는 보존하는 '소프트 삭제' 방식이 훨씬 선호됩니다.
+실무에서는 복구 및 데이터 분석을 위해 **소프트 삭제**가 강력히 권장됩니다.
 
 #### **방법 1: 하드 삭제 (Hard Delete) - 기본 `delete()`**
 
 모델 인스턴스나 쿼리셋의 `.delete()` 메서드를 호출하면, 해당 레코드는 데이터베이스에서 **영구적으로, 복구할 수 없게 삭제**됩니다. `DELETE FROM ...` SQL 문이 직접 실행됩니다.
+
 
 - **동작 방식**:
     - `post = Post.objects.get(pk=1); post.delete()`: 단일 객체를 삭제합니다.
@@ -931,7 +1147,25 @@ post.save(update_fields=['title'])
     - **데이터 분석의 어려움**: 사용자의 탈퇴나 콘텐츠 삭제 이력을 추적할 수 없어, 서비스의 중요한 통계 및 분석 데이터를 잃게 됩니다.
     - **무결성 문제**: `on_delete` 옵션이 잘못 설정된 경우, 관계가 꼬이거나 오류가 발생할 수 있습니다.
 
+- **View 함수에서 활용하기 (신중하게 사용!)**
+  ```python
+  # blog/views.py
+  from django.views.decorators.http import require_POST
+
+  @require_POST # POST 요청만 허용
+  def post_hard_delete(request, post_id):
+      post = get_object_or_404(Post, pk=post_id)
+      if request.user != post.author:
+          return HttpResponseForbidden("삭제 권한이 없습니다.")
+      
+      # 모델에 정의된 hard_delete() 메서드 호출
+      post.hard_delete()
+      
+      return redirect('post_list')
+  ```
+
 #### **방법 2: 소프트 삭제 (Soft Deletion) - 실무 권장 패턴**
+
 
 소프트 삭제는 레코드를 실제로 지우는 대신, `is_deleted=True` 와 같은 플래그(flag)를 두어 삭제된 것처럼 취급하는 방식입니다. 데이터는 DB에 그대로 남아있지만, 일반적인 조회에서는 나타나지 않습니다.
 
@@ -939,49 +1173,48 @@ post.save(update_fields=['title'])
 
 - **구현 방법**: 커스텀 매니저와 `delete()` 메서드 오버라이딩을 조합하여 구현합니다.
 
-    **1단계: 추상 모델에 삭제 관련 필드 및 로직 추가**
-    ```python
-    # common/models.py
-    from django.db import models
-    from django.utils import timezone
 
-    class SoftDeletionManager(models.Manager):
-        # is_deleted=False인 객체만 조회하는 커스텀 매니저
-        def get_queryset(self):
-            return super().get_queryset().filter(is_deleted=False)
+- **View 함수에서 활용하기 (안전한 삭제)**
+  모델의 `delete()` 메서드를 오버라이드했으므로, 일반적인 `.delete()` 호출이 소프트 삭제를 수행합니다.
+  ```python
+  # blog/views.py
+  @require_POST
+  def post_soft_delete(request, post_id):
+      post = get_object_or_404(Post, pk=post_id)
+      if request.user != post.author:
+          return HttpResponseForbidden("삭제 권한이 없습니다.")
+      
+      # 오버라이드된 delete()가 호출되어 소프트 삭제 실행
+      post.delete()
+      
+      return redirect('post_list')
+  ```
 
-    class SoftDeletionModel(models.Model):
-        is_deleted = models.BooleanField("삭제 여부", default=False)
-        deleted_at = models.DateTimeField("삭제일시", null=True, blank=True, default=None)
+#### **소프트 삭제된 데이터 관리 (휴지통 기능)**
 
-        # 기본 매니저를 소프트 삭제 매니저로 교체
-        objects = SoftDeletionManager()
-        # 소프트 삭제된 객체를 포함한 모든 객체에 접근할 수 있는 별도 매니저
-        all_objects = models.Manager()
+- **View 함수에서 활용하기 (휴지통 및 복원)**
+  `all_objects` 매니저를 사용하여 삭제된 항목을 보고, `restore()` 메서드로 복원합니다.
+  ```python
+  # blog/views.py
+  def trash_bin(request):
+      # all_objects 매니저로 삭제된 게시글만 조회
+      deleted_posts = Post.all_objects.filter(is_deleted=True, author=request.user)
+      context = {'deleted_posts': deleted_posts}
+      return render(request, 'blog/trash_bin.html', context)
 
-        # delete() 메서드를 오버라이드하여 소프트 삭제를 수행
-        def delete(self, using=None, keep_parents=False):
-            self.is_deleted = True
-            self.deleted_at = timezone.now()
-            self.save(update_fields=['is_deleted', 'deleted_at'])
+  @require_POST
+  def post_restore(request, post_id):
+      # all_objects로 삭제된 게시글 중에서 찾아야 함
+      post = get_object_or_404(Post.all_objects, pk=post_id, is_deleted=True)
+      if request.user != post.author:
+          return HttpResponseForbidden("복원 권한이 없습니다.")
+      
+      # 모델에 정의된 restore() 메서드 호출
+      post.restore()
+      
+      return redirect('trash_bin')
+  ```
 
-        # 실제 DB에서 삭제하는 하드 삭제 메서드도 별도로 정의 가능
-        def hard_delete(self):
-            super().delete(using=using, keep_parents=keep_parents)
-
-        class Meta:
-            abstract = True
-    ```
-
-    **2단계: 실제 모델에서 상속받아 사용**
-    ```python
-    # blog/models.py
-    # from common.models import SoftDeletionModel
-
-    class Post(SoftDeletionModel, TimestampedModel): # 여러 추상 모델 상속
-        # ... 기존 필드들 ...
-        pass
-    ```
 
 - **사용법**:
     - `post.delete()`: 이제 `Post` 객체의 `delete()`를 호출하면 `is_deleted`가 `True`로 바뀌는 **소프트 삭제**가 일어납니다.
