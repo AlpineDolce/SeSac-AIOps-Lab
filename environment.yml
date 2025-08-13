@@ -156,6 +156,9 @@ dependencies:
       - redis>=4.5.0  # Redis Python client (server installation separate)
       - waitress>=2.1.0  # Windows-compatible WSGI server (alternative to gunicorn)
 
+      # === SUPERGEMINI ===
+      - supergemini>=3.1.4
+
 # === INSTALLATION NOTES FOR WINDOWS ===
 # 
 # 1. Java Runtime Required for KoNLPy:
