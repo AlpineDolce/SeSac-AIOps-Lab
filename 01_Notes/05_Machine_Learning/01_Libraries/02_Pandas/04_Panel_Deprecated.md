@@ -6,7 +6,6 @@
 
 <h2>목차</h2>
 
-- [목차](#목차)
 - [1. Panel (3차원 데이터 - Deprecated)](#1-panel-3차원-데이터---deprecated)
   - [1.1. Panel의 개념 및 과거 역할](#11-panel의-개념-및-과거-역할)
   - [1.2. Panel의 Deprecation 이유](#12-panel의-deprecation-이유)

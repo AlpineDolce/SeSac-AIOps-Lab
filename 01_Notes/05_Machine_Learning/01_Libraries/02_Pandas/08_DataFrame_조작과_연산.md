@@ -252,16 +252,7 @@ print(df_assign)
 
 ### 1.4. 컬럼의 데이터 타입 변경
 
-`astype()` 메서드는 컬럼의 데이터 타입을 변경하는 가장 일반적이고 효율적인 방법입니다. 메모리 사용량을 줄이거나, 연산을 위해 데이터 타입을 통일할 때 필수적입니다.
-
-- **단일 컬럼 타입 변경**
-- **여러 컬럼 타입 변경**
-- **변환 불가능한 값이 있을 경우 처리**
-    - `pd.to_numeric` 함수와 `errors='coerce'` 옵션을 사용하면 변환할 수 없는 값을 강제로 `NaN`(결측치)으로 만듭니다.
-- **다른 일반적인 타입 변경 예시**
-    - 문자열 숫자를 `float`으로
-    - `0`/`1`을 `boolean`으로
-    - 문자열 날짜를 `datetime`으로
+`astype()` 메서드는 컬럼의 데이터 타입을 변경하는 가장 일반적이고 효율적인 방법입니다. 메모리 사용량을 줄이거나, 연산을 위해 데이터 타입을 통일할 때 필수적입니다. `pd.to_numeric()`, `pd.to_datetime()` 등과 같은 함수를 사용하여 문자열을 숫자나 날짜/시간 타입으로 변환할 수도 있습니다.
 
 ```python
 import pandas as pd
@@ -281,37 +272,14 @@ df_types['B'] = df_types['B'].astype(int)
 print("\n--- 'B' 컬럼을 int로 변경 후 ---")
 print(df_types.dtypes)
 
-# 여러 컬럼 타입 변경
-df_types = df_types.astype({'A': float, 'C': int})
-print("\n--- 'A'는 float, 'C'는 int로 변경 후 ---")
-print(df_types.dtypes)
-
-# 변환 불가능한 값이 있을 경우
+# 변환 불가능한 값이 있을 경우 (예: 'abc')
 df_error = pd.DataFrame({'col': ['1', '2', 'abc']})
-# df_error['col'] = df_error['col'].astype(int) # 이 코드는 ValueError 발생
-
-# to_numeric 함수와 errors='coerce' 옵션 사용
-# 변환할 수 없는 값을 강제로 NaN(결측치)으로 만듦
+# pd.to_numeric 함수와 errors='coerce' 옵션을 사용하면 변환할 수 없는 값을 NaN(결측치)으로 만듭니다.
 df_error['col_numeric'] = pd.to_numeric(df_error['col'], errors='coerce')
 print("\n--- to_numeric(errors='coerce') 적용 후 ---")
 print(df_error)
-
-# 다른 일반적인 타입 변경 예시
-df_misc_types = pd.DataFrame({
-    'num_str': ['1', '2', '3'],
-    'bool_int': [0, 1, 0],
-    'date_str': ['2023-01-01', '2023-01-02', '2023-01-03']
-})
-print(f"\n--- 기타 타입 변경 전 ---\n{df_misc_types.dtypes}")
-
-df_misc_types['num_str'] = df_misc_types['num_str'].astype(float) # 문자열 숫자를 float으로
-df_misc_types['bool_int'] = df_misc_types['bool_int'].astype(bool) # 0/1을 boolean으로
-df_misc_types['date_str'] = pd.to_datetime(df_misc_types['date_str']) # 문자열 날짜를 datetime으로
-
-print(f"\n--- 기타 타입 변경 후 ---\n{df_misc_types.dtypes}")
-print(df_misc_types)
-
 ```
+(더 자세한 내용은 [14_데이터_유효성_검사.md - 데이터 타입 강제 변환 및 오류 처리 섹션](./14_데이터_유효성_검사.md#4-데이터-타입-강제-변환-및-오류-처리)을 참조하세요.)
 
 ## 2. DataFrame 산술 연산
 

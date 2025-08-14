@@ -2,7 +2,7 @@
 작성자: Alpine_Dolce&nbsp;&nbsp;|&nbsp;&nbsp;날짜: 2025-08-07 (최종 수정: 2025-08-13)
 
 <h2>문서 목표</h2>
-이 문서는 Pandas의 1차원 데이터 구조인 `Series`의 개념, 특징, 다양한 생성 방법, 그리고 데이터 접근 및 수정, 핵심 메서드 사용법을 상세히 다룹니다. 특히 `loc`, `iloc`와 같은 명시적인 인덱싱 방법과 실무에서 자주 사용되는 데이터 처리 기법을 포함하여 `Series`를 효율적으로 다루는 역량을 강화하는 데 중점을 둡니다.
+이 문서는 Pandas의 1차원 데이터 구조인 `Series`의 개념, 특징, 다양한 생성 방법, 그리고 데이터 접근 및 수정 방법을 상세히 다룹니다. 특히 `loc`, `iloc`와 같은 명시적인 인덱싱 방법과 실무에서 자주 사용되는 데이터 처리 기법을 포함하여 `Series`를 효율적으로 다루는 역량을 강화하는 데 중점을 둡니다.
 
 <h2>목차</h2>
 
@@ -16,19 +16,11 @@
     - [1.2.5. 인덱스를 명시하여 Series 만들기](#125-인덱스를-명시하여-series-만들기)
   - [1.3. Series 데이터 접근 및 수정](#13-series-데이터-접근-및-수정)
     - [1.3.1. 기본 접근 `[]`의 모호성 및 권장사항](#131-기본-접근-의-모호성-및-권장사항)
-    - [1.3.2. `head()`, `tail()`, `describe()` 등 기본 정보 확인](#132-head-tail-describe-등-기본-정보-확인)
-    - [1.3.3. `loc`를 이용한 레이블 기반 접근](#133-loc를-이용한-레이블-기반-접근)
-    - [1.3.4. `iloc`를 이용한 정수 위치 기반 접근](#134-iloc를-이용한-정수-위치-기반-접근)
-    - [1.3.5. `get()` 메서드를 이용한 안전한 접근](#135-get-메서드를-이용한-안전한-접근)
-    - [1.3.6. 조건식 필터링 (Boolean Indexing)](#136-조건식-필터링-boolean-indexing)
-    - [1.3.7. Series의 벡터화 연산](#137-series의-벡터화-연산)
-    - [1.3.8. 함수 적용 (map, apply)](#138-함수-적용-map-apply)
-    - [1.3.9. 데이터 타입 변경 (astype)](#139-데이터-타입-변경-astype)
-  - [1.4. Series의 주요 메서드](#14-series의-주요-메서드)
-    - [1.4.1. 데이터 탐색 및 요약](#141-데이터-탐색-및-요약)
-    - [1.4.2. 정렬](#142-정렬)
-    - [1.4.3. 결측치 처리](#143-결측치-처리)
-  - [1.5. 문자열 데이터 처리 (.str 접근자)](#15-문자열-데이터-처리-str-접근자)
+    - [1.3.2. `loc`를 이용한 레이블 기반 접근](#132-loc를-이용한-레이블-기반-접근)
+    - [1.3.3. `iloc`를 이용한 정수 위치 기반 접근](#133-iloc를-이용한-정수-위치-기반-접근)
+    - [1.3.4. `get()` 메서드를 이용한 안전한 접근](#134-get-메서드를-이용한-안전한-접근)
+    - [1.3.5. Series의 벡터화 연산](#135-series의-벡터화-연산)
+    - [1.3.6. 데이터 타입 변경 (astype)](#136-데이터-타입-변경-astype)
 
 --- 
 
@@ -177,7 +169,7 @@ print(s_custom_index)
 
 대괄호 `[]`를 사용한 기본 인덱싱은 편리하지만, 인덱스의 종류에 따라 혼란을 유발할 수 있습니다. 특히, **정수형 레이블 인덱스**를 사용할 경우 위치 기반인지 레이블 기반인지 모호해집니다.
 
-> **⚠️ 주의:** 코드의 명확성과 재현성을 위해 데이터 접근 시에는 `[]` 대신 `loc`와 `iloc`를 사용하는 것을 강력히 권장합니다.
+- **⚠️ 주의:** 코드의 명확성과 재현성을 위해 데이터 접근 시에는 `[]` 대신 `loc`와 `iloc`를 사용하는 것을 강력히 권장합니다.
 
 ```python
 import pandas as pd
@@ -195,36 +187,7 @@ print(f"\ns_int_label[2] -> 레이블 '2'의 값: {s_int_label[2]}")
 print(f"s_int_label.iloc[2] -> 2번 위치의 값: {s_int_label.iloc[2]}")
 ```
 
-#### 1.3.2. `head()`, `tail()`, `describe()` 등 기본 정보 확인
-
-`Series`의 크기가 클 때 전체를 출력하는 대신, 데이터의 구조와 통계적 요약을 빠르게 파악하는 데 유용합니다.
-
--   **`s.head(n=5)`**: Series의 **상위 `n`개 데이터**를 반환하여 데이터의 첫 부분을 빠르게 확인합니다.
-    ```python
-    import pandas as pd
-    import numpy as np
-    s_info = pd.Series([10, 20, 20, 30, 40, 50, 60, 70, 80, 90, np.nan])
-    print("--- Series 기본 정보 확인 ---")
-    print("원본 Series:\n", s_info)
-    print("\n1. `s.head()`: 앞의 5행만 출력 (기본값)\n", s_info.head())
-    ```
-
--   **`s.tail(n=5)`**: Series의 **하위 `n`개 데이터**를 반환하여 데이터의 끝 부분을 빠르게 확인합니다.
-    ```python
-    print("\n2. `s.tail(3)`: 뒤의 3행만 출력\n", s_info.tail(3))
-    ```
-
--   **`s.describe()`**: **수치형 데이터에 대한 기술 통계 요약**을 제공합니다. (개수, 평균, 표준편차, 최소/최대값, 백분위수)
-    ```python
-    print("\n3. `s.describe()`: Series 기술 통계 요약\n", s_info.describe())
-    ```
-
--   **`s.value_counts()`**: Series 내의 **고유한 값들의 빈도수**를 계산하여 반환합니다. 범주형 데이터의 분포를 파악할 때 매우 유용합니다.
-    ```python
-    print("\n4. `s.value_counts()`: 고유 값 빈도수\n", s_info.value_counts())
-    ```
-
-#### 1.3.3. `loc`를 이용한 레이블 기반 접근
+#### 1.3.2. `loc`를 이용한 레이블 기반 접근
 
 `loc` 접근자는 **레이블(이름) 기반**으로 데이터에 접근하거나 수정할 때 사용합니다. 슬라이싱 시 끝 인덱스 레이블을 **포함**합니다.
 
@@ -263,7 +226,7 @@ print(f"s_int_label.iloc[2] -> 2번 위치의 값: {s_int_label.iloc[2]}")
     print(f"5. 수정 후 Series:\n{s_copy}")
     ```
 
-#### 1.3.4. `iloc`를 이용한 정수 위치 기반 접근
+#### 1.3.3. `iloc`를 이용한 정수 위치 기반 접근
 
 `iloc` 접근자는 **정수 위치(position) 기반**으로 데이터에 접근하거나 수정할 때 사용합니다. 파이썬 리스트의 인덱싱과 유사하며, 슬라이싱 시 끝 인덱스를 **포함하지 않습니다**.
 
@@ -297,7 +260,7 @@ print(f"s_int_label.iloc[2] -> 2번 위치의 값: {s_int_label.iloc[2]}")
     print(f"4. 수정 후 Series:\n{s_copy}")
     ```
 
-#### 1.3.5. `get()` 메서드를 이용한 안전한 접근
+#### 1.3.4. `get()` 메서드를 이용한 안전한 접근
 `get()` 메서드는 딕셔너리처럼 특정 레이블의 값을 안전하게 가져올 때 사용합니다. 해당 레이블이 존재하지 않으면 `KeyError`를 발생시키는 대신 `None`이나 지정된 기본값을 반환합니다.
 
 ```python
@@ -314,44 +277,7 @@ print(f"s.get('x'): {s.get('x')}")
 print(f"s.get('x', default=-1): {s.get('x', default=-1)}")
 ```
 
-#### 1.3.6. 조건식 필터링 (Boolean Indexing)
-
-특정 조건을 만족하는 데이터만 선택할 때 유용합니다. 조건식의 결과로 `True`/`False`로 구성된 불리언 `Series`가 생성되며, 이를 사용하여 원본 `Series`에서 `True`에 해당하는 값만 추출합니다.
-
-> **⚠️ 주의: SettingWithCopyWarning**
-> `s[s > 50][0] = 999` 와 같이 인덱싱을 두 번 연결(chaining)하여 값을 수정하려고 하면 `SettingWithCopyWarning`이 발생할 수 있습니다. 이는 Pandas가 반환된 객체가 원본의 뷰(view)인지 복사본(copy)인지 보장할 수 없기 때문입니다. **데이터 수정 시에는 항상 `loc`나 `iloc`를 사용한 단일 접근으로 수정해야 합니다.**
-
-- **1. 단일 조건 필터링**
-    ```python
-    import pandas as pd
-    s = pd.Series([10, 20, 30, 40, 50, 60])
-    print("\n--- Series 조건식 필터링 ---")
-    print("원본 Series:\n", s)
-    print("\n1. 값이 30보다 큰 데이터:\n", s[s > 30])
-    ```
-
-- **2. 여러 조건 결합 (`&`, `|`)**
-    ```python
-    print("\n2. 값이 20 이상 50 이하인 데이터:\n", s[(s >= 20) & (s <= 50)])
-    ```
-
-- **3. `isin()` 메서드를 이용한 필터링**
-
-    `isin()` 메서드는 `Series`의 각 요소가 특정 값 목록에 포함되어 있는지 확인하여 불리언 `Series`를 반환합니다. 여러 특정 값을 필터링할 때 매우 유용합니다.
-    ```python
-    s_fruits = pd.Series(['apple', 'banana', 'cherry', 'orange'])
-    filter_list = ['apple', 'cherry']
-    print("\n3. isin()을 이용한 필터링:\n", s_fruits[s_fruits.isin(filter_list)])
-    ```
-
-- **4. `loc`를 이용한 조건부 데이터 수정**
-    ```python
-    s_copy = s.copy()
-    s_copy.loc[s_copy > 50] = 999 # loc를 사용한 단일 접근
-    print(f"\n4. 값이 50보다 큰 데이터를 999로 수정한 결과:\n{s_copy}")
-    ```
-
-#### 1.3.7. Series의 벡터화 연산
+#### 1.3.5. Series의 벡터화 연산
 
 `Series` 객체는 NumPy 배열과 유사하게 벡터화된(element-wise) 연산을 지원합니다. `+`, `-`, `*`, `/`, `**`, `//`, `%` 등 대부분의 표준 산술 연산자가 지원됩니다. `Series` 간의 연산은 동일한 인덱스를 기준으로 수행되며, 인덱스가 한쪽에만 존재할 경우 결과는 `NaN`이 됩니다.
 
@@ -382,31 +308,7 @@ print(f"s.get('x', default=-1): {s.get('x', default=-1)}")
     print(f"\n3. s1 * 10:\n{s_scalar_mul}")
     ```
 
-#### 1.3.8. 함수 적용 (map, apply)
-
-`Series`의 각 요소에 특정 함수를 일괄적으로 적용할 때 `map`이나 `apply`를 사용합니다.
-
-- **`map`**: 1:1 매핑에 최적화되어 있습니다. 딕셔너리를 전달하여 값을 치환하거나, 각 요소를 인자로 받는 함수를 적용할 수 있습니다. 딕셔너리에 없는 값은 `NaN`으로 변환됩니다.
-- **`apply`**: `map`보다 더 유연하며, 각 요소를 처리하는 임의의 복잡한 함수를 적용할 수 있습니다. 내부적으로 반복문을 실행할 수 있어 `map`보다 약간 느릴 수 있습니다.
-
-- **1. `map`을 이용한 매핑**
-    ```python
-    import pandas as pd
-    s = pd.Series(['apple', 'banana', 'cherry', 'apple'])
-    
-    fruit_map = {'apple': 'red', 'banana': 'yellow', 'cherry': 'red'}
-    print("\n--- map을 이용한 매핑 ---")
-    print(s.map(fruit_map))
-    ```
-
-- **2. `apply`와 lambda 함수를 이용한 변환**
-    ```python
-    # 2. apply와 lambda 함수를 이용한 변환
-    print("\n--- apply를 이용한 변환 ---")
-    print(s.apply(lambda x: x.upper()))
-    ```
-
-#### 1.3.9. 데이터 타입 변경 (astype)
+#### 1.3.6. 데이터 타입 변경 (astype)
 
 `astype()` 메서드는 `Series`의 데이터 타입을 변경하는 가장 일반적이고 효율적인 방법입니다. 메모리 사용량을 줄이거나, 연산을 위해 데이터 타입을 통일할 때 필수적입니다.
 
@@ -426,116 +328,3 @@ s_str = s_types.astype(str)
 print("\nstr로 변경 후:\n", s_str)
 print("변경된 dtype:", s_str.dtype)
 ```
-
-### 1.4. Series의 주요 메서드
-
-`Series`는 데이터를 탐색, 정제, 변환하는 데 유용한 다양한 내장 메서드를 제공합니다.
-
-#### 1.4.1. 데이터 탐색 및 요약
-
-- **`head()`, `tail()`**: 데이터 앞/뒤 일부를 확인합니다.
-    ```python
-    import pandas as pd
-    import numpy as np
-    s = pd.Series([1, 1, 2, 3, 5, 8, np.nan, 1, 2])
-    print("\n--- 데이터 탐색 및 요약 메서드 ---")
-    print("원본 Series:\n", s)
-    print("\ns.head(3):\n", s.head(3))
-    print("\ns.tail(3):\n", s.tail(3))
-    ```
-
-- **`describe()`**: 수치형 데이터의 기술 통계를 요약합니다.
-    ```python
-    print("\ns.describe():\n", s.describe())
-    ```
-
-- **`value_counts()`**: 고유값의 빈도수를 계산합니다.
-    ```python
-    print("\ns.value_counts():\n", s.value_counts())
-    ```
-
-- **`unique()`, `nunique()`**: 고유값을 확인합니다.
-    ```python
-    print("\ns.unique():", s.unique()) # 고유값 배열
-    print("s.nunique():", s.nunique()) # 고유값 개수 (NaN 제외)
-    ```
-
-#### 1.4.2. 정렬
-
-- **`sort_values()`**: 값을 기준으로 정렬합니다.
-    ```python
-    import pandas as pd
-    s_sort = pd.Series([30, 10, 20], index=['c', 'a', 'b'])
-    print("\n--- 정렬 메서드 ---")
-    print("원본 Series:\n", s_sort)
-    print("\ns.sort_values():\n", s_sort.sort_values())
-    print("\ns.sort_values(ascending=False):\n", s_sort.sort_values(ascending=False))
-    ```
-
-- **`sort_index()`**: 인덱스를 기준으로 정렬합니다.
-    ```python
-    print("\ns.sort_index():\n", s_sort.sort_index())
-    ```
-
-#### 1.4.3. 결측치 처리
-
-- **`isnull()`, `notnull()`**: 결측치 여부를 확인합니다.
-    ```python
-    import pandas as pd
-    import numpy as np
-    s_nan = pd.Series([1, 2, np.nan, 4, np.nan])
-    print("\n--- 결측치 처리 메서드 ---")
-    print("원본 Series:\n", s_nan)
-    print("\ns.isnull():\n", s_nan.isnull())
-    print("\ns.isnull().sum():", s_nan.isnull().sum())
-    ```
-
-- **`dropna()`**: 결측치가 포함된 요소를 제거합니다.
-    ```python
-    print("\ns.dropna():\n", s_nan.dropna())
-    ```
-
-- **`fillna()`**: 결측치를 특정 값으로 채웁니다.
-    ```python
-    # 0으로 채우기
-    print("\ns.fillna(0):\n", s_nan.fillna(0))
-
-    # 이전 값으로 채우기 (Forward fill)
-    print("\ns.fillna(method='ffill'):\n", s_nan.fillna(method='ffill'))
-
-    # 다음 값으로 채우기 (Backward fill)
-    print("\ns.fillna(method='bfill'):\n", s_nan.fillna(method='bfill'))
-    ```
-
-### 1.5. 문자열 데이터 처리 (.str 접근자)
-
-`Series`의 `dtype`이 `object`이고, 실제 데이터가 문자열일 경우 `.str` 접근자를 사용하여 다양한 문자열 처리 메서드를 벡터화된 방식으로 적용할 수 있습니다. 이는 파이썬의 기본 문자열 메서드와 유사하지만, `Series` 전체에 한 번에 적용되어 코드가 간결하고 효율적입니다.
-
-- **주요 `.str` 메서드**
-    - `.lower()`, `.upper()`: 대소문자 변환
-    - `.contains(pattern)`: 특정 패턴(문자열) 포함 여부 확인 (불리언 반환)
-    - `.startswith(pattern)`, `.endswith(pattern)`: 특정 문자열로 시작/끝나는지 확인
-    - `.replace(old, new)`: 문자열 치환
-    - `.split(pattern)`: 문자열 분리
-    - `.strip()`, `.lstrip()`, `.rstrip()`: 공백 제거
-    - `.len()`: 각 문자열의 길이 반환
-
-- **`.str` 접근자 사용 예시**
-    ```python
-    import pandas as pd
-    s_text = pd.Series(['  Apple  ', ' Banana! ', 'cherry', 'date juice'])
-    print("\n--- .str 접근자 활용 ---")
-    print("원본 Series:\n", s_text)
-
-    # 1. 공백 제거 및 소문자 변환
-    s_clean = s_text.str.strip().str.lower()
-    print("\n1. 공백 제거 및 소문자 변환 후:\n", s_clean)
-
-    # 2. 'a'를 포함하는 과일 필터링
-    s_contains_a = s_text[s_text.str.contains('a')]
-    print("\n2. 'a'를 포함하는 데이터:\n", s_contains_a)
-
-    # 3. 공백 기준으로 문자열 분리
-    s_split = s_text.str.split()
-    print("\n3. 공백 기준 분리 결과:\n", s_split)
-    ```
