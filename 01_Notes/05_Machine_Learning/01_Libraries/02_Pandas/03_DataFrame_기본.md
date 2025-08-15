@@ -6,25 +6,23 @@
 
 <h2>목차</h2>
 
-- [1. DataFrame (2차원 데이터)](#1-dataframe-2차원-데이터)
-  - [1.1. DataFrame의 개념 및 특징](#11-dataframe의-개념-및-특징)
-  - [1.2. DataFrame 생성 방법](#12-dataframe-생성-방법)
-    - [1.2.1. 딕셔너리(dict)로 DataFrame 만들기](#121-딕셔너리dict로-dataframe-만들기)
-    - [1.2.2. 리스트(list)의 리스트로 DataFrame 만들기](#122-리스트list의-리스트로-dataframe-만들기)
-    - [1.2.3. NumPy 배열(ndarray)로 DataFrame 만들기](#123-numpy-배열ndarray로-dataframe-만들기)
-    - [1.2.4. 리스트의 딕셔너리로 DataFrame 만들기](#124-리스트의-딕셔너리로-dataframe-만들기)
-    - [1.2.5. Series 딕셔너리로 DataFrame 만들기](#125-series-딕셔너리로-dataframe-만들기)
-    - [1.2.6. 빈 DataFrame 만들기](#126-빈-dataframe-만들기)
-  - [1.3. DataFrame 데이터 접근 및 조작](#13-dataframe-데이터-접근-및-조작)
-    - [1.3.1. 컬럼(열) 선택](#131-컬럼열-선택)
-    - [1.3.2. `loc`를 이용한 레이블 기반 접근](#132-loc를-이용한-레이블-기반-접근)
-    - [1.3.3. `iloc`를 이용한 정수 위치 기반 접근](#133-iloc를-이용한-정수-위치-기반-접근)
+- [1. DataFrame의 개념 및 특징](#11-dataframe의-개념-및-특징)
+- [2. DataFrame 생성 방법](#12-dataframe-생성-방법)
+  - [2.1. 딕셔너리(dict)로 DataFrame 만들기](#121-딕셔너리dict로-dataframe-만들기)
+  - [2.2. 리스트(list)의 리스트로 DataFrame 만들기](#122-리스트list의-리스트로-dataframe-만들기)
+  - [2.3. NumPy 배열(ndarray)로 DataFrame 만들기](#123-numpy-배열ndarray로-dataframe-만들기)
+  - [2.4. 리스트의 딕셔너리로 DataFrame 만들기](#124-리스트의-딕셔너리로-dataframe-만들기)
+  - [2.5. Series 딕셔너리로 DataFrame 만들기](#125-series-딕셔너리로-dataframe-만들기)
+  - [2.6. 빈 DataFrame 만들기](#126-빈-dataframe-만들기)
+- [3. DataFrame 데이터 접근 및 조작](#13-dataframe-데이터-접근-및-조작)
+  - [3.1. 컬럼(열) 선택](#131-컬럼열-선택)
+  - [3.2. `loc`를 이용한 레이블 기반 접근](#132-loc를-이용한-레이블-기반-접근)
+  - [3.3. `iloc`를 이용한 정수 위치 기반 접근](#133-iloc를-이용한-정수-위치-기반-접근)
 
 ---
 
-## 1. DataFrame (2차원 데이터)
 
-### 1.1. DataFrame의 개념 및 특징
+### 1. DataFrame의 개념 및 특징
 
 `DataFrame`은 Pandas의 핵심 2차원 데이터 구조로, **행(row)과 열(column)으로 이루어진 테이블 형태**를 가집니다. 관계형 데이터베이스의 테이블, Excel 스프레드시트, 또는 CSV 파일과 매우 유사합니다. 각 열은 `Series` 객체로 볼 수 있으며, 서로 다른 데이터 타입을 가질 수 있습니다. 이는 각 컬럼이 독립적인 데이터 유형을 가질 수 있음을 의미합니다 (예: 이름은 문자열, 나이는 정수, 도시는 문자열).
 
@@ -71,11 +69,11 @@
     print(f"\nDataFrame의 값 (values):\n{df.values}")
     ```
 
-### 1.2. DataFrame 생성 방법
+### 2. DataFrame 생성 방법
 
 `DataFrame`은 다양한 파이썬 객체로부터 생성할 수 있습니다. 데이터의 초기 형태에 따라 적절한 방법을 선택하는 것이 중요합니다.
 
-#### 1.2.1. 딕셔너리(dict)로 DataFrame 만들기
+#### 2.1. 딕셔너리(dict)로 DataFrame 만들기
 
 가장 일반적인 방법으로, 딕셔너리의 키(key)가 컬럼 이름이 되고, 값(value)은 리스트나 Series 형태의 데이터가 됩니다. 각 리스트의 길이는 동일해야 합니다.
 
@@ -93,7 +91,7 @@ print("--- 딕셔너리로 생성된 DataFrame ---")
 print(df_from_dict)
 ```
 
-#### 1.2.2. 리스트(list)의 리스트로 DataFrame 만들기
+#### 2.2. 리스트(list)의 리스트로 DataFrame 만들기
 
 각 내부 리스트가 한 행을 나타내고, `columns` 인자를 사용하여 컬럼 이름을 지정할 수 있습니다. `columns`를 지정하지 않으면 0부터 시작하는 정수 컬럼 인덱스가 부여됩니다.
 
@@ -110,7 +108,7 @@ print("\n--- 리스트의 리스트로 생성된 DataFrame ---")
 print(df_from_list_of_lists)
 ```
 
-#### 1.2.3. NumPy 배열(ndarray)로 DataFrame 만들기
+#### 2.3. NumPy 배열(ndarray)로 DataFrame 만들기
 
 NumPy 2차원 배열을 사용하여 `DataFrame`을 생성할 수 있습니다. 이는 대규모 수치 데이터를 `DataFrame`으로 변환할 때 효율적이며, `columns` 인자를 통해 컬럼 이름을 지정하는 것이 일반적입니다.
 
@@ -125,7 +123,7 @@ print("\n--- NumPy 배열로 생성된 DataFrame ---")
 print(s_from_np)
 ```
 
-#### 1.2.4. 리스트의 딕셔너리로 DataFrame 만들기
+#### 2.4. 리스트의 딕셔너리로 DataFrame 만들기
 
 각 딕셔너리가 한 행을 나타내며, 딕셔너리의 키가 컬럼 이름이 됩니다. 이 방법은 JSON 데이터와 같이 구조화된 데이터를 `DataFrame`으로 변환할 때 유용합니다.
 
@@ -142,7 +140,7 @@ print("\n--- 리스트의 딕셔너리로 생성된 DataFrame ---")
 print(df_from_list_of_dicts)
 ```
 
-#### 1.2.5. Series 딕셔너리로 DataFrame 만들기
+#### 2.5. Series 딕셔너리로 DataFrame 만들기
 
 각 `Series`가 `DataFrame`의 한 컬럼이 됩니다. `Series`의 인덱스가 `DataFrame`의 행 인덱스가 됩니다.
 
@@ -158,7 +156,7 @@ print("\n--- Series 딕셔너리로 생성된 DataFrame ---")
 print(df_from_series_dict) # 인덱스 불일치 시 NaN 발생
 ```
 
-#### 1.2.6. 빈 DataFrame 만들기
+#### 2.6. 빈 DataFrame 만들기
 
 컬럼 이름만 지정하여 빈 `DataFrame`을 만들 수 있습니다. 나중에 데이터를 추가할 때 유용합니다.
 
@@ -171,11 +169,11 @@ print("\n--- 빈 DataFrame ---\
 print(f"빈 DataFrame의 형태: {empty_df.shape}")
 ```
 
-### 1.3. DataFrame 데이터 접근 및 조작
+### 3. DataFrame 데이터 접근 및 조작
 
 `DataFrame`의 데이터는 다양한 방법으로 접근하고 조작할 수 있습니다. `Series`와 마찬가지로 `loc`와 `iloc` 접근자를 사용하여 명시적인 접근을 하는 것이 권장됩니다.
 
-#### 1.3.1. 컬럼(열) 선택
+#### 3.1. 컬럼(열) 선택
 
 단일 컬럼은 `Series` 형태로, 여러 컬럼은 `DataFrame` 형태로 반환됩니다. 컬럼 이름은 대소문자를 구분합니다.
 
@@ -234,7 +232,7 @@ print("--- DataFrame 컬럼 선택 ---\
     print("\n4. 모든 컬럼 이름 출력:", df.columns)
     ```
 
-#### 1.3.2. `loc`를 이용한 레이블 기반 접근
+#### 3.2. `loc`를 이용한 레이블 기반 접근
 
 `loc` 접근자는 Pandas DataFrame에서 **행의 레이블(이름)과 열의 레이블(컬럼명)을 기반**으로 데이터를 선택하거나 수정할 때 사용하는 강력한 인덱서입니다. `loc`는 항상 **명시적인 레이블**을 사용하며, 슬라이싱 시 끝 레이블을 **포함**하는 특징이 있습니다.
 
@@ -286,7 +284,7 @@ print("--- DataFrame 컬럼 선택 ---\
     ```
 > **참고**: `loc`를 이용한 고급 슬라이싱, 여러 행/열 선택, 불리언 조건식 필터링 등은 [**12_고급_인덱싱_및_선택.md**](./12_고급_인덱싱_및_선택.md) 및 [**09_조건부_데이터_검색.md**](./09_조건부_데이터_검색.md)에서 더 자세히 다룹니다.
 
-#### 1.3.3. `iloc`를 이용한 정수 위치 기반 접근
+#### 3.3. `iloc`를 이용한 정수 위치 기반 접근
 
 `iloc` 접근자는 **행과 열의 정수 위치(position)를 기반**으로 데이터에 접근하거나 수정할 때 사용합니다. 파이썬 리스트의 인덱싱과 유사하며, 슬라이싱 시 끝 인덱스를 **포함하지 않습니다**.
 
