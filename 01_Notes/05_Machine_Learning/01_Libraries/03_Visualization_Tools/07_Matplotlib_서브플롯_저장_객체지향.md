@@ -57,6 +57,36 @@ print(type(fig))
 print(type(axes))
 print(axes.shape) # (2, 2)
 ```
+#### 1.2.1. 공유 축 (Shared Axes) 설정
+여러 서브플롯을 그릴 때, x축이나 y축의 범위를 동일하게 유지해야 할 경우가 있습니다. 예를 들어, 동일한 시간 축을 공유하는 여러 시계열 플롯을 나란히 보여줄 때 유용합니다. `plt.subplots()` 함수는 `sharex`와 `sharey` 파라미터를 통해 축 공유 기능을 제공합니다.
+
+*   `sharex=True`: 모든 서브플롯이 x축을 공유합니다.
+*   `sharey=True`: 모든 서브플롯이 y축을 공유합니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성
+x = np.linspace(0, 10, 100)
+y1 = np.sin(x)
+y2 = np.cos(x)
+
+# x축을 공유하는 2개의 서브플롯 생성
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4), sharex=True)
+
+ax1.plot(x, y1, color='blue')
+ax1.set_title('Sine Wave')
+ax1.set_ylabel('Amplitude')
+
+ax2.plot(x, y2, color='red')
+ax2.set_title('Cosine Wave')
+ax2.set_ylabel('Amplitude')
+
+plt.suptitle('Shared X-axis Example') # 전체 Figure 제목
+plt.tight_layout()
+plt.show()
+```
 
 ### 1.3. 서브플롯에 개별 플롯 그리기 및 커스터마이징
 `plt.subplots()`를 통해 얻은 `axes` 객체를 사용하여 각 서브플롯에 독립적인 그래프를 그리고 커스터마이징할 수 있습니다. 각 `axes` 객체는 `plt.plot()`, `plt.title()`, `plt.xlabel()`, `plt.ylabel()` 등 `pyplot` 함수의 객체 지향 버전 메서드를 가집니다 (예: `ax.plot()`, `ax.set_title()`).
@@ -190,6 +220,15 @@ plt.ylabel("Y")
 # PNG 파일로 저장
 plt.savefig("sine_wave.png")
 print('\'sine_wave.png\' 파일이 저장되었습니다.')
+
+# 객체 지향 방식으로 Figure 저장 (권장)
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.plot(x, y)
+ax.set_title("Object-Oriented Plot to Save")
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+fig.savefig("oo_sine_wave.png")
+print('\'oo_sine_wave.png\' 파일이 객체 지향 방식으로 저장되었습니다.')
 ```
 
 ---
@@ -324,6 +363,40 @@ ax.set_ylabel('Y-axis')
 ax.legend()
 ax.grid(True)
 
+plt.show()
+```
+### 3.3.1. `ax.twinx()`: 이중 Y축 생성
+`ax.twinx()` 메서드는 기존 Axes와 x축을 공유하면서 새로운 y축을 생성합니다. 이는 서로 다른 단위를 가진 두 종류의 데이터를 하나의 플롯에 함께 표시할 때 유용합니다 (예: 온도와 강수량, 판매량과 이익률).
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성
+x = np.linspace(0, 10, 100)
+y1 = np.sin(x)
+y2 = np.cos(x) * 100 # 스케일이 다른 데이터
+
+# Figure와 Axes 객체 생성
+fig, ax1 = plt.subplots(figsize=(8, 5))
+
+# 첫 번째 y축 (ax1)에 플롯
+ax1.plot(x, y1, color='blue', label='Sine Wave')
+ax1.set_xlabel('X-axis')
+ax1.set_ylabel('Sine Value', color='blue')
+ax1.tick_params(axis='y', labelcolor='blue')
+ax1.legend(loc='upper left')
+
+# 두 번째 y축 (ax2) 생성
+ax2 = ax1.twinx() # x축을 공유하는 새로운 y축 생성
+
+# 두 번째 y축 (ax2)에 플롯
+ax2.plot(x, y2, color='red', label='Cosine Value (Scaled)')
+ax2.set_ylabel('Cosine Value (Scaled)', color='red')
+ax2.tick_params(axis='y', labelcolor='red')
+ax2.legend(loc='upper right')
+
+plt.title('Plot with Twin Y-axes')
 plt.show()
 ```
 

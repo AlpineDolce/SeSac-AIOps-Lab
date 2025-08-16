@@ -11,11 +11,14 @@
     - [1.1.1. `imshow()` 기본 사용법](#111-imshow-기본-사용법)
     - [1.1.2. 주요 매개변수 (cmap, interpolation 등)](#112-주요-매개변수-cmap-interpolation-등)
     - [1.1.3. 활용 예시 (혼동 행렬, 이미지 데이터)](#113-활용-예시-혼동-행렬-이미지-데이터)
+    - [1.1.4. `pcolormesh()`를 이용한 2D 배열 시각화](#114-pcolormesh-를-이용한-2d-배열-시각화)
   - [1.2. 3차원 데이터 시각화: `mplot3d`](#12-3차원-데이터-시각화-mplot3d)
     - [1.2.1. 3D Axes 생성](#121-3d-axes-생성)
     - [1.2.2. 3D 산점도 (`scatter3D`)](#122-3d-산점도-scatter3d)
     - [1.2.3. 3D 곡면/와이어프레임 플롯 (`plot_surface`, `plot_wireframe`)](#123-3d-곡면-와이어프레임-플롯-plot_surface-plot_wireframe)
     - [1.2.4. 3D 막대 플롯 (`plot_2d_from_3d_data`)](#124-3d-막대-플롯-plot_2d_from_3d_data)
+    - [1.2.5. 3D 라인 플롯 (`plot3D`)](#125-3d-라인-플롯-plot3d)
+    - [1.2.6. 3D 플롯 뷰 및 축 범위 설정](#126-3d-플롯-뷰-및-축-범위-설정)
 
 ---
 
@@ -48,6 +51,7 @@ for i in range(5):
     for j in range(5):
         plt.text(j, i, f'{matrix[i, j]:.2f}', ha='center', va='center', color='white')
 
+plt.savefig('imshow_matrix.png') # 그래프를 이미지 파일로 저장
 plt.show()
 
 # 간단한 흑백 이미지 시각화
@@ -131,6 +135,27 @@ plt.title('MNIST-like Image Visualization')
 plt.axis('off') # 축 제거
 plt.show()
 ```
+#### 1.1.4. `pcolormesh()`를 이용한 2D 배열 시각화
+`imshow()`가 주로 이미지 데이터나 균일한 그리드 데이터를 시각화하는 데 사용되는 반면, `plt.pcolormesh()`는 더 유연하게 2D 배열 데이터를 색상으로 표현할 수 있습니다. 특히 그리드가 균일하지 않거나, 각 셀의 경계를 명확히 표현해야 할 때 유용합니다. `pcolormesh()`는 각 사각형 셀의 색상을 지정하여 히트맵과 유사한 시각화를 생성합니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성 (불균일 그리드 예시)
+x = np.arange(0, 10, 2) # x축 간격이 2
+y = np.arange(0, 10, 1) # y축 간격이 1
+X, Y = np.meshgrid(x, y)
+Z = np.random.rand(Y.shape[0], X.shape[1]) # Z 값은 (y_len, x_len) 형태
+
+plt.figure(figsize=(8, 6))
+plt.pcolormesh(X, Y, Z, cmap='viridis')
+plt.colorbar(label='Value')
+plt.title('pcolormesh Example with Irregular Grid')
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.show()
+```
 
 ### 1.2. 3차원 데이터 시각화: `mplot3d`
 
@@ -154,6 +179,7 @@ fig2 = plt.figure(figsize=(8, 6))
 ax2 = fig2.add_subplot(111, projection='3d') # 단일 3D Axes
 ax2.set_title('3D Axes (Method 2)')
 
+plt.savefig('3d_axes_example.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -182,6 +208,7 @@ ax.set_xlabel('X-axis')
 ax.set_ylabel('Y-axis')
 ax.set_zlabel('Z-axis')
 
+plt.savefig('3d_scatter_plot.png') # 그래프를 이미지 파일로 저장
 plt.show()
 
 # 또 다른 3D 산점도 예시
@@ -214,6 +241,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
+
 # 데이터 생성 (x, y 그리드 및 z 값)
 x = np.linspace(-5, 5, 50)
 y = np.linspace(-5, 5, 50)
@@ -239,6 +267,7 @@ ax2.set_ylabel('Y')
 ax2.set_zlabel('Z')
 
 plt.tight_layout()
+plt.savefig('3d_surface_wireframe_plot.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -272,6 +301,73 @@ ax.set_title('3D Bar Plot')
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
+
+plt.savefig('3d_bar_plot.png') # 그래프를 이미지 파일로 저장
+plt.show()
+```
+#### 1.2.5. 3D 라인 플롯 (`plot3D`)
+3차원 공간에서 데이터 포인트들을 선으로 연결하여 시각화할 때 `plot3D()` 함수를 사용합니다. 이는 3차원 경로, 시계열 데이터의 3D 표현 등에 유용합니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+
+# 3D 라인 플롯 데이터 생성
+t = np.linspace(-np.pi, np.pi, 500)
+x = np.sin(t)
+y = np.cos(t)
+z = t
+
+fig = plt.figure(figsize=(8, 6))
+ax = fig.add_subplot(111, projection='3d')
+
+ax.plot3D(x, y, z, color='blue')
+ax.set_title('3D Line Plot (Helix)')
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
+plt.show()
+```
+#### 1.2.6. 3D 플롯 뷰 및 축 범위 설정
+3D 플롯에서는 시점을 조절하거나 각 축의 범위를 명시적으로 설정하여 데이터의 특정 부분을 강조하거나 전체적인 구조를 더 명확하게 보여줄 수 있습니다.
+
+*   **시점 조절 (`ax.view_init(elev, azim)`):**
+    *   `elev`: 고도(elevation) 각도 (z축을 기준으로 위아래 회전).
+    *   `azim`: 방위(azimuth) 각도 (xy 평면을 기준으로 좌우 회전).
+    *   이 함수를 사용하여 플롯을 다양한 각도에서 볼 수 있습니다.
+
+*   **축 범위 설정 (`ax.set_xlim()`, `ax.set_ylim()`, `ax.set_zlim()`):**
+    *   2D 플롯과 유사하게 각 축의 최소 및 최대 값을 설정하여 데이터의 특정 영역을 확대하거나 불필요한 공간을 제거할 수 있습니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+
+# 데이터 생성
+x = np.random.rand(100)
+y = np.random.rand(100)
+z = np.random.rand(100)
+
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+ax.scatter(x, y, z, c='red', marker='o')
+
+# 시점 조절 (고도 30도, 방위 45도)
+ax.view_init(elev=30, azim=45)
+
+# 축 범위 설정
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.set_zlim(0, 1)
+
+ax.set_title('3D Scatter Plot with Custom View and Limits')
+ax.set_xlabel('X-axis')
+ax.set_ylabel('Y-axis')
+ax.set_zlabel('Z-axis')
 
 plt.show()
 ```

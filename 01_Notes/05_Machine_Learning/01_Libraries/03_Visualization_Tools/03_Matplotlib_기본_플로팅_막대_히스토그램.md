@@ -52,6 +52,7 @@ plt.title("Basic Bar Plot")
 plt.xlabel("Category")
 plt.ylabel("Value")
 plt.show()
+plt.savefig('basic_bar_plot.png') # 그래프를 이미지 파일로 저장
 ```
 
 #### 1.1.2. 막대 그래프 커스터마이징 (색상, 제목, 축 레이블)
@@ -81,6 +82,37 @@ plt.ylabel("Value", fontsize=12)
 plt.grid(axis='y', linestyle='--', alpha=0.7) # y축 그리드 추가
 plt.show()
 ```
+#### 1.1.3. 수평 막대 그래프 (Horizontal Bar Plot)
+수평 막대 그래프는 막대가 수평으로 그려지는 형태로, 특히 범주 이름이 길어서 y축에 표시하기 어려울 때 유용합니다. `plt.barh()` 함수를 사용하여 그립니다. `plt.bar()`와 유사하게 `y`축에 범주를, `x`축에 값을 지정합니다.
+
+**코드 설명**:
+*   `plt.barh(categories, values)`: `categories`를 y축으로, `values`를 막대의 길이로 사용하여 수평 막대 그래프를 그립니다.
+*   `plt.ylabel()`, `plt.xlabel()`: 축 레이블이 바뀌므로 `ylabel`과 `xlabel`도 적절히 변경합니다.
+
+```python
+import matplotlib.pyplot as plt
+
+# 데이터 생성
+categories = ['Product A (Long Name)', 'Product B (Even Longer Name)', 'Product C', 'Product D']
+values = [20, 35, 30, 25]
+
+# 수평 막대 그래프 그리기
+plt.figure(figsize=(8, 6)) # 그래프 크기 설정
+plt.barh(categories, values, color='teal')
+plt.title("Horizontal Bar Plot of Categories")
+plt.xlabel("Value")
+plt.ylabel("Category")
+plt.grid(axis='x', linestyle='--', alpha=0.7) # x축 그리드 추가
+plt.show()
+```
+#### 1.1.4. 그룹 및 누적 막대 그래프 (Grouped & Stacked Bar Plots)
+단일 막대 그래프 외에도, 여러 데이터 시리즈를 비교하거나 전체에 대한 각 부분의 기여도를 보여주기 위해 그룹 막대 그래프(Grouped Bar Plot)와 누적 막대 그래프(Stacked Bar Plot)를 자주 사용합니다.
+
+*   **그룹 막대 그래프:** 여러 범주에 걸쳐 다른 시리즈의 값을 나란히 비교할 때 사용합니다. `plt.bar()` 함수를 여러 번 호출하고 `width` 및 `x` 위치를 조정하여 구현합니다.
+*   **누적 막대 그래프:** 각 막대가 전체를 나타내고, 그 막대 안의 세그먼트들이 전체에 대한 각 부분의 기여도를 보여줄 때 사용합니다. `plt.bar()` 함수를 여러 번 호출하되, `bottom` 파라미터를 사용하여 이전 막대 위에 쌓아 올립니다.
+
+이러한 고급 막대 그래프 유형은 데이터의 복잡한 관계를 시각적으로 명확하게 전달하는 데 매우 효과적입니다. 자세한 구현 방법은 Matplotlib 공식 문서를 참조하거나, Seaborn과 같은 고수준 라이브러리를 활용하면 더 쉽게 구현할 수 있습니다.
+
 
 ### 1.2. 히스토그램 (Histogram)
 히스토그램은 단일 연속형 변수의 데이터 분포를 시각적으로 파악하는 데 사용되는 플롯입니다. 데이터를 여러 구간(bin)으로 나누고, 각 구간에 속하는 데이터 포인트의 개수(빈도)를 막대의 높이로 표현합니다. Matplotlib에서는 `plt.hist()` 함수를 사용하여 히스토그램을 그립니다.

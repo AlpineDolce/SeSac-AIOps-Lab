@@ -65,6 +65,7 @@ plt.xlabel("X-axis") # x축 레이블
 plt.ylabel("Y-axis") # y축 레이블
 plt.grid(True) # 그리드 표시
 plt.show() # 그래프 보여주기
+plt.savefig('simple_line_plot.png') # 그래프를 이미지 파일로 저장
 ```
 
 #### 1.1.2. 여러 라인 플롯 함께 그리기
@@ -144,6 +145,14 @@ Matplotlib은 그래프의 가독성과 정보 전달력을 높이기 위해 다
     *   예시: `plt.legend(loc='upper right', fontsize='small')`
 
 이러한 커스터마이징 함수들을 적절히 활용하면, 복잡한 데이터도 명확하고 효과적으로 전달하는 시각화를 만들 수 있습니다.
+
+5.  **라인 스타일 (`linestyle` 또는 `ls`) 및 마커 (`marker`) - 라인 모양 및 데이터 포인트 표시**:
+    *   `linestyle` (또는 `ls`): 라인의 모양을 지정합니다. (예: `'-'` (실선), `'--'` (파선), `'-.'` (점선), `':'` (점선))
+    *   `marker`: 각 데이터 포인트에 표시할 마커의 모양을 지정합니다. (예: `'o'` (원), `'x'` (엑스), `'s'` (사각형), `'^'` (삼각형), `'.'` (점))
+    *   `markersize` (또는 `ms`): 마커의 크기를 지정합니다.
+    *   `markeredgecolor` (또는 `mec`): 마커 테두리 색상을 지정합니다.
+    *   `markerfacecolor` (또는 `mfc`): 마커 내부 색상을 지정합니다.
+    *   예시: `plt.plot(x, y, linestyle='--', marker='o', markersize=5, markeredgecolor='black')`
 
 ```python
 import matplotlib.pyplot as plt

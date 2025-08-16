@@ -59,6 +59,7 @@ plt.xlabel('X-value')
 plt.ylabel('Y-value')
 plt.legend()
 plt.grid(True)
+plt.savefig('line_plot_with_error_bars.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -98,6 +99,7 @@ plt.title('Bar Plot with Error Bars')
 plt.xlabel('Group')
 plt.ylabel('Measurement')
 plt.xticks(x, ['G1', 'G2', 'G3', 'G4', 'G5'])
+plt.savefig('bar_plot_with_error_bars.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -136,6 +138,7 @@ plt.colorbar(label='Count in bin')
 plt.title('2D Histogram')
 plt.xlabel('X-variable')
 plt.ylabel('Y-variable')
+plt.savefig('2d_histogram.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -164,6 +167,7 @@ plt.colorbar(label='Count in bin')
 plt.title('Hexbin Plot')
 plt.xlabel('X-variable')
 plt.ylabel('Y-variable')
+plt.savefig('hexbin_plot.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 

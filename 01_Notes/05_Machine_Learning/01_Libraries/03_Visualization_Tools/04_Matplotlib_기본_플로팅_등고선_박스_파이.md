@@ -62,6 +62,7 @@ plt.clabel(contour, inline=True, fontsize=8) # 등고선에 값 표시
 plt.title('Contour Plot (Lines)')
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
+plt.savefig('basic_contour_plot.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -90,6 +91,7 @@ plt.colorbar(label='Value') # 컬러바 추가
 plt.title('Filled Contour Plot')
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
+plt.savefig('filled_contour_plot.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -174,6 +176,7 @@ plt.title('Basic Box Plot')
 plt.xlabel('Group')
 plt.ylabel('Value')
 plt.grid(True)
+plt.savefig('basic_box_plot.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
@@ -254,6 +257,44 @@ plt.ylabel('Value Distribution', fontsize=12)
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.show()
 ```
+#### 1.2.4. 바이올린 플롯 (Violin Plot)
+바이올린 플롯은 박스 플롯과 유사하게 데이터의 분포를 보여주지만, 추가적으로 커널 밀도 추정(Kernel Density Estimation, KDE)을 통해 데이터의 밀도 분포를 시각적으로 표현합니다. 이는 데이터가 특정 값에 얼마나 밀집되어 있는지를 부드러운 곡선 형태로 보여주어, 박스 플롯만으로는 알기 어려운 분포의 형태(예: 다봉 분포)를 파악하는 데 유용합니다.
+
+`plt.violinplot(data)` 함수를 사용하여 바이올린 플롯을 그립니다.
+
+**코드 설명**:
+*   `plt.violinplot(data)`: 데이터 배열 또는 데이터 배열의 리스트를 받아 바이올린 플롯을 그립니다.
+*   `showmedians=True`: 중앙값을 표시합니다.
+*   `showextrema=False`: 극단값(수염 끝)을 표시하지 않습니다.
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 데이터 생성 (세 그룹의 데이터)
+data1 = np.random.normal(0, 1, 100)
+data2 = np.random.normal(1, 1.5, 100)
+data3 = np.normal(-1, 0.5, 100)
+data = [data1, data2, data3]
+
+# 바이올린 플롯 그리기
+plt.figure(figsize=(10, 7))
+violin_parts = plt.violinplot(data, showmedians=True, showextrema=False)
+
+# 바이올린 색상 설정 (선택 사항)
+colors = ['lightblue', 'lightgreen', 'lightcoral']
+for idx, pc in enumerate(violin_parts['bodies']):
+    pc.set_facecolor(colors[idx])
+    pc.set_edgecolor('black')
+    pc.set_alpha(0.7)
+
+plt.title('Violin Plot of Three Groups', fontsize=16)
+plt.xlabel('Data Group', fontsize=12)
+plt.ylabel('Value Distribution', fontsize=12)
+plt.xticks([1, 2, 3], ['Group A', 'Group B', 'Group C']) # x축 레이블 설정
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+```
 
 ### 1.3. 파이 차트 (Pie Chart)
 파이 차트(Pie Chart)는 전체에 대한 각 부분의 비율을 부채꼴의 면적으로 나타내는 그래프입니다. 데이터의 구성 비율을 직관적으로 보여줄 때 유용하지만, 항목이 너무 많거나 비율 차이가 미미할 경우 해석이 어려울 수 있어 사용에 주의가 필요합니다. Matplotlib에서는 `plt.pie()` 함수를 사용하여 파이 차트를 그립니다.
@@ -287,6 +328,7 @@ plt.figure(figsize=(7, 7))
 plt.pie(sizes, labels=labels)
 plt.title('Basic Pie Chart')
 plt.axis('equal')  # 파이 차트를 원형으로 유지
+plt.savefig('basic_pie_chart.png') # 그래프를 이미지 파일로 저장
 plt.show()
 ```
 
