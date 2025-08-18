@@ -181,3 +181,5 @@ aclImdb/
 *.gif
 *.bmp
 */data
+data/
+*.ubyte
