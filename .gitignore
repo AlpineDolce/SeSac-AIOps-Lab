@@ -183,3 +183,4 @@ aclImdb/
 */data
 data/
 *.ubyte
+/03_Projects
