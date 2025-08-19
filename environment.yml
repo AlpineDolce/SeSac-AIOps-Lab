@@ -129,6 +129,12 @@ dependencies:
       - textblob>=0.17.1
       - korpora>=0.2.0
 
+      # === LLM / GENERATIVE AI ===
+      - langchain>=0.1.0
+      - langchain-community>=0.0.20
+      - langchain-upstage>=0.1.0
+      - rapidfuzz>=3.0.0
+
       # === KOREAN NLP (requires Java) ===
       - konlpy>=0.6.0
       - jpype1>=1.4.0
