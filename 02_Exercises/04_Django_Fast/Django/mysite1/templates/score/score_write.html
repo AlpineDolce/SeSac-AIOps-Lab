@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <form name="myform" id="myform" >
+        {%csrf_token%}
+        {{form.as_p}}
+        <!--html 서버로 전송시켜서 -> request객체에 담아서 모델에 담아서 
+        디비에 저장 :  form 클래스가 이걸 대체 form클래스에 있는 fields 과 
+        labels 를 보고 직접 태그를 생성한다  p태그로 감싸서 :
+        데이터를 입력으로 받을것들만 지정해야 한다-->
+    </form>
+    
+    <button type="button" id="btnSend">등록</button>
+   
+</body>
+<script>
+    //html DOM 구조가 완성되고 나면 onload 이벤트가 발생한다 
+    window.onload= ()=>{
+        document.querySelector("#btnSend").addEventListener("click", 
+            ()=>{
+                let frm = document.myform; //form객체를 가져온다 , name속성
+                //let frm = document.querySelector("#myform") 도 가능,id속성
+                frm.method="post";
+                let modify='{{modify}}';
+                if (modify=='True')
+                    frm.action = "/score/update/{{id}}";
+                else 
+                    frm.action = "/score/save";
+                frm.submit(); //서버로 전송하기  
+            }
+        );
+    }
+</script>
+</html>
