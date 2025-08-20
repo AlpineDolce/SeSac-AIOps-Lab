@@ -1,4 +1,4 @@
-name: aiops
+name: aiops_langchain
 channels:
   - conda-forge
   - defaults
@@ -130,10 +130,12 @@ dependencies:
       - korpora>=0.2.0
 
       # === LLM / GENERATIVE AI ===
+      - tokenizers<0.21.0,>=0.20.0 # Pin for Langchain
       - langchain>=0.1.0
       - langchain-community>=0.0.20
       - langchain-upstage>=0.1.0
       - rapidfuzz>=3.0.0
+      - transformers<4.31.0 # Use a slightly older transformers if needed
 
       # === KOREAN NLP (requires Java) ===
       - konlpy>=0.6.0
