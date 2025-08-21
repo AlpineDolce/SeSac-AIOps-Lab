@@ -9,9 +9,14 @@
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python)
-![Web Frameworks](https://img.shields.io/badge/Web-Django%20%7C%20FastAPI-blueviolet?style=for-the-badge&logo=django)
-![Machine Learning](https://img.shields.io/badge/ML%2FDL-Scikit--Learn%20%7C%20TensorFlow%20%7C%20PyTorch-orange?style=for-the-badge&logo=tensorflow)
-![Database](https://img.shields.io/badge/Database-MySQL%20%7C%20SQLite-yellow?style=for-the-badge&logo=mysql)
+![R](https://img.shields.io/badge/R-4.x-blue?style=for-the-badge&logo=r)
+![SQL](https://img.shields.io/badge/SQL-MySQL%20%7C%20SQLite-yellow?style=for-the-badge&logo=mysql)
+![NoSQL](https://img.shields.io/badge/NoSQL-MongoDB-green?style=for-the-badge&logo=mongodb)
+![Big Data](https://img.shields.io/badge/Big%20Data-Spark%20%7C%20Flink-red?style=for-the-badge&logo=apachespark)
+![Backend Frameworks](https://img.shields.io/badge/Backend-Django%20%7C%20FastAPI-blueviolet?style=for-the-badge&logo=django)
+![Machine Learning](https://img.shields.io/badge/ML-Scikit--Learn-orange?style=for-the-badge&logo=scikitlearn)
+![Deep Learning](https://img.shields.io/badge/DL-TensorFlow%20%7C%20PyTorch-purple?style=for-the-badge&logo=tensorflow)
+![LLM Framework](https://img.shields.io/badge/LLM%20Framework-Langchain-brightgreen?style=for-the-badge&logo=langchain)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge)
 
 </div>
@@ -20,7 +25,7 @@
 
 ## 프로젝트 개요
 
-`SeSac AIOps Lab`은 단순한 코드 저장소를 넘어, AI/ML 분야의 깊이 있는 학습과 실전 경험을 체계적으로 쌓아가는 과정을 담은 살아있는 포트폴리오입니다. 파이썬 기초부터 딥러닝 심화 이론, 알고리즘, 데이터베이스, 그리고 웹 프레임워크를 활용한 모델 서빙까지, AIOps 엔지니어로 성장하기 위한 모든 기술적 탐험을 기록합니다.
+`SeSac AIOps Lab`은 단순한 코드 저장소를 넘어, AI/ML 분야의 깊이 있는 학습과 실전 경험을 체계적으로 쌓아가는 과정을 담은 살아있는 포트폴리오입니다. 파이썬 기초부터 R 언어, 알고리즘, 관계형/NoSQL 데이터베이스, 웹 프레임워크, 그리고 Langchain을 활용한 LLM 모델 서빙까지, AIOps 엔지니어로 성장하기 위한 모든 기술적 탐험을 기록합니다.
 
 이 레포지토리는 다음과 같은 목표를 추구합니다:
 - **Systematic Learning**: 분산된 지식을 체계적으로 구조화하고, 학습 경로를 명확히 제시합니다.
@@ -31,12 +36,16 @@
 
 이 레포지토리는 다음과 같은 핵심 기술들을 기반으로 구축되었습니다.
 
-- **`Programming Language`**: Python
-- **`Data Science`**: Pandas, Numpy, Scikit-learn, Matplotlib, Seaborn
-- **`Machine Learning / Deep Learning`**: TensorFlow, Keras, PyTorch
-- **`Web Frameworks / API`**: Django, FastAPI
+- **`Programming Language`**: Python, R
+- **`Algorithms & Data Structures`**: (Concepts, no specific libraries listed here)
 - **`Database`**: MySQL, SQLite
-- **`Development Environment`**: Conda, Jupyter Notebook
+- **`NoSQL`**: MongoDB
+- **`Backend Frameworks`**: Django, FastAPI
+- **`Data Science Libraries`**: Pandas, Numpy, Scikit-learn, Matplotlib, Seaborn
+- **`Machine Learning / Deep Learning Frameworks`**: TensorFlow, Keras, PyTorch
+- **`LLM Framework`**: Langchain
+- **`Development Environment`**: Conda, Jupyter Notebook, VS Code (implied by CLI usage)
+- **`Productivity & Tools`**: (Various tools like Excel, CLI utilities, AI chat tools - concepts, not specific libraries to list here)
 
 *전체 의존성 정보는 `environment.yml` 파일에서 확인하실 수 있습니다.*
 
@@ -51,11 +60,14 @@ SeSac-AIOps-Lab/
 │   └── AI/ML의 이론적 기반을 다지는 학습 노트 공간입니다.
 │       ├── 01_Python: 파이썬 문법, 자료구조, OOP 등 프로그래밍 기초
 │       ├── 02_Algorithm: 문제 해결 능력 향상을 위한 알고리즘 및 자료구조
-│       ├── 03_SQL: 데이터 처리를 위한 데이터베이스 및 SQL
-│       ├── 04_Django_Fast: 모델 서빙을 위한 Django, FastAPI 웹 프레임워크
-│       ├── 05_Machine_Learning: 머신러닝 핵심 이론 및 라이브러리
-│       ├── 06_Deep_Learning: 딥러닝, 신경망, 최신 모델 아키텍처
-│       └── 07_etc: 기타 학습 자료 (취업, AI 최신 동향 등)
+│       ├── 03_SQL: 관계형 데이터베이스 및 SQL
+│       ├── 04_NoSQL: 비관계형 데이터베이스 및 NoSQL
+│       ├── 05_Big_Data: 대규모 데이터 처리 및 분산 컴퓨팅 (Spark, Flink 등)
+│       ├── 06_Backend_Frameworks: 백엔드 웹 프레임워크 (Django, FastAPI 등)
+│       ├── 07_R: R 언어 및 통계, 데이터 분석 도구 (Excel 포함)
+│       ├── 08_Machine_Learning: 머신러닝 핵심 이론 및 라이브러리
+│       ├── 09_Deep_Learning: 딥러닝, 신경망, 최신 모델 아키텍처
+│       └── 10_Productivity_and_Tools: 데이터 과학자를 위한 생산성 도구 및 꿀팁 (CLI, AI 챗봇 등)
 │
 ├── 02_Exercises/
 │   └── 이론을 코드로 구현하며 실력을 단련하는 실습 공간입니다.
